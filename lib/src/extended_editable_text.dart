@@ -5,6 +5,7 @@
 // ignore_for_file: unnecessary_null_comparison, always_put_control_body_on_new_line
 
 import 'dart:async';
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -183,6 +184,8 @@ class ExtendedEditableText extends StatefulWidget {
     this.enableIMEPersonalizedLearning = true,
     this.showToolbarInWeb = false,
     this.scribbleEnabled = true,
+    this.pasteTextIntercept,
+    this.offsetFunction,
   })  : assert(controller != null),
         assert(focusNode != null),
         assert(obscuringCharacter != null && obscuringCharacter.length == 1),
@@ -243,6 +246,8 @@ class ExtendedEditableText extends StatefulWidget {
 
   ///build your ccustom text span
   final SpecialTextSpanBuilder? specialTextSpanBuilder;
+
+  final VoidCallback? pasteTextIntercept;
 
   /// Controls the text being edited.
   final TextEditingController controller;
@@ -996,6 +1001,8 @@ class ExtendedEditableText extends StatefulWidget {
   /// Defaults to [Clip.hardEdge].
   final Clip clipBehavior;
 
+  Function(Offset)? offsetFunction;
+
   /// Restoration ID to save and restore the scroll offset of the
   /// [EditableText].
   ///
@@ -1250,7 +1257,8 @@ class ExtendedEditableText extends StatefulWidget {
 }
 
 /// State for a [ExtendedEditableText].
-class ExtendedEditableTextState extends State<ExtendedEditableText>
+class ExtendedEditableTextState
+    extends ExtendedEditableTextStateRenderObject<ExtendedEditableText>
     with
         AutomaticKeepAliveClientMixin<ExtendedEditableText>,
         WidgetsBindingObserver,
@@ -1418,6 +1426,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     if (!selection.isValid) {
       return;
     }
+    widget.pasteTextIntercept?.call();
     // Snapshot the input before using `await`.
     // See https://github.com/flutter/flutter/issues/11427
     final ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
@@ -1425,10 +1434,36 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       return;
     }
 
-    _replaceText(
-        ReplaceTextIntent(textEditingValue, data.text!, selection, cause));
+    /// 使用系统复制粘贴，过滤图片名
+    final String controllerText = widget.controller.text;
+    final String dataText = data.text ?? '';
+    if (controllerText.length > dataText.length + 2 && dataText.isNotEmpty) {
+      final String subText =
+          controllerText.substring(controllerText.length - dataText.length - 2);
+      if (subText == '/$dataText]') {
+        return;
+      }
+    }
+    // After the paste, the cursor should be collapsed and located after the
+    // pasted content.
+    final int lastSelectionIndex =
+        math.max(selection.baseOffset, selection.extentOffset);
+    final TextEditingValue collapsedTextEditingValue =
+        textEditingValue.copyWith(
+      selection: TextSelection.collapsed(offset: lastSelectionIndex),
+    );
+
+    userUpdateTextEditingValue(
+      collapsedTextEditingValue.replaced(selection, data.text!),
+      cause,
+    );
     if (cause == SelectionChangedCause.toolbar) {
-      bringIntoView(textEditingValue.selection.extent);
+      // Schedule a call to bringIntoView() after renderEditable updates.
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          bringIntoView(textEditingValue.selection.extent);
+        }
+      });
       hideToolbar();
     }
   }
@@ -1851,6 +1886,9 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       // Default behavior if the developer did not provide an
       // onEditingComplete callback: Finalize editing and remove focus, or move
       // it to the next/previous field, depending on the action.
+      if (Platform.isMacOS || Platform.isWindows) {
+        return;
+      }
       widget.controller.clearComposing();
       if (shouldUnfocus) {
         switch (action) {
@@ -3003,6 +3041,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
                       promptRectColor: widget.autocorrectionTextRectColor,
                       clipBehavior: widget.clipBehavior,
                       supportSpecialText: supportSpecialText,
+                      offsetFunction: widget.offsetFunction,
                     ),
                   ),
                 ),
@@ -3247,6 +3286,7 @@ class _Editable extends MultiChildRenderObjectWidget {
     this.promptRectRange,
     this.promptRectColor,
     required this.clipBehavior,
+    this.offsetFunction,
   })  : assert(textDirection != null),
         assert(rendererIgnoresPointer != null),
         super(key: key, children: _extractChildren(inlineSpan));
@@ -3308,6 +3348,7 @@ class _Editable extends MultiChildRenderObjectWidget {
   final TextRange? promptRectRange;
   final Color? promptRectColor;
   final Clip clipBehavior;
+  Function(Offset)? offsetFunction;
 
   @override
   ExtendedRenderEditable createRenderObject(BuildContext context) {
@@ -3352,6 +3393,7 @@ class _Editable extends MultiChildRenderObjectWidget {
       promptRectRange: promptRectRange,
       promptRectColor: promptRectColor,
       clipBehavior: clipBehavior,
+      offsetFunction: offsetFunction,
     );
   }
 
@@ -3826,10 +3868,18 @@ class _UpdateTextSelectionAction<T extends DirectionalCaretMovementIntent>
     }
 
     final TextPosition extent = textBoundarySelection.extent;
-    final TextPosition newExtent = intent.forward
+    TextPosition newExtent = intent.forward
         ? textBoundary.getTrailingTextBoundaryAt(extent)
         : textBoundary.getLeadingTextBoundaryAt(extent);
 
+    /// bhlin
+    if (intent is ExtendSelectionByCharacterIntent &&
+        state.renderEditable.hasSpecialInlineSpanBase) {
+      newExtent = convertTextInputPostionToTextPainterPostion2(
+          state.renderEditable.text!, newExtent);
+      newExtent = convertTextPainterPostionToTextInputPostion(
+          state.renderEditable.text!, newExtent)!;
+    }
     final TextSelection newSelection = collapseSelection
         ? TextSelection.fromPosition(newExtent)
         : textBoundarySelection.extendTo(newExtent);

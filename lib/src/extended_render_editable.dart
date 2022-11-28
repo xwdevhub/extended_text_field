@@ -256,6 +256,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     ExtendedRenderEditablePainter? foregroundPainter,
     this.supportSpecialText = false,
     List<RenderBox>? children,
+    this.offsetFunction,
   })  : assert(textAlign != null),
         assert(textDirection != null,
             'RenderEditable created without a textDirection.'),
@@ -338,6 +339,8 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     addAll(children);
     extractPlaceholderSpans(text);
   }
+
+  Function(Offset)? offsetFunction;
 
   ///whether to support build SpecialText
 
@@ -436,7 +439,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   // Caret Painters:
   // The floating painter. This painter paints the regular caret as well.
   late final _FloatingCursorPainter _caretPainter =
-      _FloatingCursorPainter(_onCaretChanged);
+      _FloatingCursorPainter(_onCaretChanged, offsetFunction);
 
   // Text Highlight painters:
   final TextHighlightPainter _selectionPainter = TextHighlightPainter();
@@ -2080,9 +2083,17 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     return endOffset;
   }
 
-  Offset getOffsetForCaret(TextPosition position, Rect caretPrototype) {
+  Offset getOffsetForCaret(
+    TextPosition position,
+    Rect caretPrototype, {
+    ValueChanged<double>? caretHeightCallBack,
+  }) {
     assert(!debugNeedsLayout);
-    return getCaretOffset(position, caretPrototype: caretPrototype);
+    return getCaretOffset(
+      position,
+      caretPrototype: caretPrototype,
+      caretHeightCallBack: caretHeightCallBack,
+    );
     //return _textPainter.getOffsetForCaret(position, caretPrototype);
   }
 
@@ -2212,7 +2223,7 @@ class _RenderEditableCustomPaint extends RenderBox {
 }
 
 class _FloatingCursorPainter extends ExtendedRenderEditablePainter {
-  _FloatingCursorPainter(this.caretPaintCallback);
+  _FloatingCursorPainter(this.caretPaintCallback, this.offSet);
 
   bool get shouldPaint => _shouldPaint;
   bool _shouldPaint = true;
@@ -2222,6 +2233,7 @@ class _FloatingCursorPainter extends ExtendedRenderEditablePainter {
     notifyListeners();
   }
 
+  Function(Offset)? offSet;
   CaretChangedHandler caretPaintCallback;
 
   bool showRegularCaret = false;
@@ -2274,23 +2286,41 @@ class _FloatingCursorPainter extends ExtendedRenderEditablePainter {
   void paintRegularCursor(Canvas canvas, ExtendedRenderEditable renderEditable,
       Color caretColor, TextPosition textPosition) {
     final Rect caretPrototype = renderEditable._caretPrototype;
-    final Offset caretOffset =
-        renderEditable.getOffsetForCaret(textPosition, caretPrototype);
+
+    /// bhlin
+    double? caretHeight = renderEditable._textPainter
+        .getFullHeightForCaret(textPosition, caretPrototype);
+    final ValueChanged<double> caretHeightCallBack = (double value) {
+      caretHeight = value;
+    };
+
+    Offset caretOffset = renderEditable.getOffsetForCaret(
+      textPosition,
+      caretPrototype,
+      caretHeightCallBack: caretHeightCallBack,
+    );
+    offSet?.call(caretOffset);
     Rect caretRect = caretPrototype.shift(caretOffset + cursorOffset);
 
-    final double? caretHeight = renderEditable._textPainter
-        .getFullHeightForCaret(textPosition, caretPrototype);
+    // final double? caretHeight = renderEditable._textPainter
+    //     .getFullHeightForCaret(textPosition, caretPrototype);
     if (caretHeight != null) {
       switch (defaultTargetPlatform) {
         case TargetPlatform.iOS:
         case TargetPlatform.macOS:
-          final double heightDiff = caretHeight - caretRect.height;
-          // Center the caret vertically along the text.
+          // final double heightDiff = caretHeight - caretRect.height;
+          // // Center the caret vertically along the text.
+          // caretRect = Rect.fromLTWH(
+          //   caretRect.left,
+          //   caretRect.top + heightDiff / 2,
+          //   caretRect.width,
+          //   caretRect.height,
+          // );
           caretRect = Rect.fromLTWH(
             caretRect.left,
-            caretRect.top + heightDiff / 2,
+            caretRect.top,
             caretRect.width,
-            caretRect.height,
+            caretHeight!,
           );
           break;
         case TargetPlatform.android:
@@ -2304,7 +2334,7 @@ class _FloatingCursorPainter extends ExtendedRenderEditablePainter {
             caretRect.left,
             caretRect.top - _kCaretHeightOffset,
             caretRect.width,
-            caretHeight,
+            caretHeight!,
           );
           break;
       }

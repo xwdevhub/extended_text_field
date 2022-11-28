@@ -247,6 +247,8 @@ class ExtendedTextField extends StatefulWidget {
     this.enableIMEPersonalizedLearning = true,
     this.shouldShowSelectionHandles,
     this.textSelectionGestureDetectorBuilder,
+    this.pasteTextIntercept,
+    this.offsetFunction,
   })  : assert(textAlign != null),
         assert(readOnly != null),
         assert(autofocus != null),
@@ -320,6 +322,8 @@ class ExtendedTextField extends StatefulWidget {
   /// create custom TextSelectionGestureDetectorBuilder
   final TextSelectionGestureDetectorBuilderCallback?
       textSelectionGestureDetectorBuilder;
+  final VoidCallback? pasteTextIntercept;
+  final Function(Offset)? offsetFunction;
 
   /// Whether should show selection handles
   /// handles are not shown in desktop or web as default
@@ -1357,6 +1361,8 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
           scribbleEnabled: widget.scribbleEnabled,
           enableIMEPersonalizedLearning: widget.enableIMEPersonalizedLearning,
           showToolbarInWeb: _selectionGestureDetectorBuilder.showToolbarInWeb,
+          pasteTextIntercept: widget.pasteTextIntercept,
+          offsetFunction: widget.offsetFunction,
         ),
       ),
     );
