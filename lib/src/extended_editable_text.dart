@@ -2408,7 +2408,7 @@ class ExtendedEditableTextState
     if (selectionChanged ||
         (userInteraction &&
             (cause == SelectionChangedCause.longPress ||
-                cause == SelectionChangedCause.keyboard))) {
+                cause == SelectionChangedCause.keyboard || cause == SelectionChangedCause.tap))) {
       _handleSelectionChanged(_value.selection, cause);
     }
     if (textChanged) {
