@@ -9,7 +9,7 @@ environment:
 dependencies:
 
   extended_text_library: 
-    git: https:/github.com/xwdevhub/extended_text_library.git
+    git: https://github.com/xwdevhub/extended_text_library.git
   flutter:  
     sdk: flutter
 dev_dependencies:
@@ -18,7 +18,7 @@ dev_dependencies:
 
 dependency_overrides:
   extended_text_library:
-    git: https:/github.com/xwdevhub/extended_text_library.git
+    git: https://github.com/xwdevhub/extended_text_library.git
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
