@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' hide VerticalCaretMovementRun;
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:pasteboard/pasteboard.dart';
 
 // The time it takes for the cursor to fade from fully opaque to fully
 // transparent and vice versa. A full cursor blink, from transparent to opaque
@@ -1434,16 +1435,12 @@ class ExtendedEditableTextState
       return;
     }
 
-    /// 使用系统复制粘贴，过滤图片名
-    final String controllerText = widget.controller.text;
-    final String dataText = data.text ?? '';
-    if (controllerText.length > dataText.length + 2 && dataText.isNotEmpty) {
-      final String subText =
-          controllerText.substring(controllerText.length - dataText.length - 2);
-      if (subText == '/$dataText]') {
-        return;
-      }
+    /// 过滤粘贴板上的文件
+    final List<String> filePaths = await Pasteboard.files();
+    if (filePaths.isNotEmpty) {
+      return;
     }
+
     // After the paste, the cursor should be collapsed and located after the
     // pasted content.
     final int lastSelectionIndex =
@@ -2408,7 +2405,8 @@ class ExtendedEditableTextState
     if (selectionChanged ||
         (userInteraction &&
             (cause == SelectionChangedCause.longPress ||
-                cause == SelectionChangedCause.keyboard || cause == SelectionChangedCause.tap))) {
+                cause == SelectionChangedCause.keyboard ||
+                cause == SelectionChangedCause.tap))) {
       _handleSelectionChanged(_value.selection, cause);
     }
     if (textChanged) {
