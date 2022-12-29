@@ -1436,10 +1436,12 @@ class ExtendedEditableTextState
     }
 
     /// 过滤粘贴板上的文件
-    final List<String> filePaths = await Pasteboard.files();
-    if (filePaths.isNotEmpty) {
-      return;
-    }
+    if (!Platform.isAndroid) {
+      final List<String> filePaths = await Pasteboard.files();
+      if (filePaths.isNotEmpty) {
+        return;
+      }
+    }   
 
     // After the paste, the cursor should be collapsed and located after the
     // pasted content.
