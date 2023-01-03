@@ -1441,7 +1441,7 @@ class ExtendedEditableTextState
       if (filePaths.isNotEmpty) {
         return;
       }
-    }   
+    }
 
     // After the paste, the cursor should be collapsed and located after the
     // pasted content.
@@ -1451,9 +1451,12 @@ class ExtendedEditableTextState
         textEditingValue.copyWith(
       selection: TextSelection.collapsed(offset: lastSelectionIndex),
     );
-
+    String? text = data.text;
+    if (data.text != null) {
+      text = data.text!.split("\n").map((e) => e.trim()).toList().join();
+    }
     userUpdateTextEditingValue(
-      collapsedTextEditingValue.replaced(selection, data.text!),
+      collapsedTextEditingValue.replaced(selection, text!),
       cause,
     );
     if (cause == SelectionChangedCause.toolbar) {
