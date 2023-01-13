@@ -1453,7 +1453,7 @@ class ExtendedEditableTextState
     );
     String? text = data.text;
     if (data.text != null) {
-      text = data.text!.split("\n").map((e) => e.trim()).toList().join();
+      text = data.text!.split('\n').map((e) => e.trim() + '\n').toList().join();
     }
     userUpdateTextEditingValue(
       collapsedTextEditingValue.replaced(selection, text!),
