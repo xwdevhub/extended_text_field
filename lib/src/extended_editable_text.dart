@@ -4055,18 +4055,56 @@ class _UpdateTextSelectionToAdjacentLineAction<
       _verticalMovementRun = null;
       _runSelection = null;
     }
+    TextPosition extent = state.renderEditable.selection!.extent;
 
+    int oldBaseOffset = extent.offset;
+    int offset = oldBaseOffset;
+    state.renderEditable.text!.visitChildren((InlineSpan ts) {
+      if (ts is SpecialInlineSpanBase) {
+        final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
+        final int length = specialTs.actualText.length;
+        if (specialTs.end <= oldBaseOffset) {
+          offset -= length - 1;
+          return true;
+        } else {
+          return false;
+        }
+      }
+      return true;
+    });
+    extent = TextPosition(
+        offset: offset,affinity:extent.affinity);
     final VerticalCaretMovementRun currentRun = _verticalMovementRun ??
         state.renderEditable
-            .startVerticalCaretMovement(state.renderEditable.selection!.extent);
+            .startVerticalCaretMovement(extent);
 
     final bool shouldMove =
-        intent.forward ? currentRun.moveNext() : currentRun.movePrevious();
-    final TextPosition newExtent = shouldMove
+    intent.forward ? currentRun.moveNext() : currentRun.movePrevious();
+    TextPosition newExtent = shouldMove
         ? currentRun.current
         : (intent.forward
-            ? TextPosition(offset: state._value.text.length)
-            : const TextPosition(offset: 0));
+        ? TextPosition(offset: state._value.text.length)
+        : const TextPosition(offset: 0));
+
+    int baseOffset = newExtent.offset;
+    state.renderEditable.text!.visitChildren((InlineSpan ts) {
+      if (ts is SpecialInlineSpanBase) {
+        final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
+        final int length = specialTs.actualText.length;
+        if (specialTs.start <= baseOffset) {
+          baseOffset += length - 1;
+          return true;
+        } else {
+          return false;
+        }
+      }
+      return true;
+    });
+    newExtent = TextPosition(
+      offset: baseOffset,
+      affinity: newExtent.affinity,
+    );
+
     final TextSelection newSelection = collapseSelection
         ? TextSelection.fromPosition(newExtent)
         : value.selection.extendTo(newExtent);
