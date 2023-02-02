@@ -4085,25 +4085,27 @@ class _UpdateTextSelectionToAdjacentLineAction<
         : (intent.forward
         ? TextPosition(offset: state._value.text.length)
         : const TextPosition(offset: 0));
-
-    int baseOffset = newExtent.offset;
-    state.renderEditable.text!.visitChildren((InlineSpan ts) {
-      if (ts is SpecialInlineSpanBase) {
-        final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
-        final int length = specialTs.actualText.length;
-        if (specialTs.start <= baseOffset) {
-          baseOffset += length - 1;
-          return true;
-        } else {
-          return false;
+    if(shouldMove){
+      int baseOffset = newExtent.offset;
+      state.renderEditable.text!.visitChildren((InlineSpan ts) {
+        if (ts is SpecialInlineSpanBase) {
+          final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
+          final int length = specialTs.actualText.length;
+          if (specialTs.start <= baseOffset) {
+            baseOffset += length - 1;
+            return true;
+          } else {
+            return false;
+          }
         }
-      }
-      return true;
-    });
-    newExtent = TextPosition(
-      offset: baseOffset,
-      affinity: newExtent.affinity,
-    );
+        return true;
+      });
+      newExtent = TextPosition(
+        offset: baseOffset,
+        affinity: newExtent.affinity,
+      );
+    }
+
 
     final TextSelection newSelection = collapseSelection
         ? TextSelection.fromPosition(newExtent)
