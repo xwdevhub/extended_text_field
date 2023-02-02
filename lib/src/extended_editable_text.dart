@@ -3877,11 +3877,50 @@ class _UpdateTextSelectionAction<T extends DirectionalCaretMovementIntent>
       );
     }
 
-    final TextPosition extent = textBoundarySelection.extent;
+     TextPosition extent = textBoundarySelection.extent;
+    if (intent.continuesAtWrap) {
+      int baseOffset = textBoundarySelection.extent.offset;
+      int offset = baseOffset;
+      state.renderEditable.text!.visitChildren((InlineSpan ts) {
+        if (ts is SpecialInlineSpanBase) {
+          final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
+          final int length = specialTs.actualText.length;
+          if (specialTs.end <= baseOffset) {
+            offset -= length - 1;
+            return true;
+          } else {
+            return false;
+          }
+        }
+        return true;
+      });
+      extent = TextPosition(
+          offset: offset,affinity:extent.affinity);
+    }
+
     TextPosition newExtent = intent.forward
         ? textBoundary.getTrailingTextBoundaryAt(extent)
         : textBoundary.getLeadingTextBoundaryAt(extent);
-
+    if (intent.continuesAtWrap) {
+      int baseOffset = newExtent.offset;
+      state.renderEditable.text!.visitChildren((InlineSpan ts) {
+        if (ts is SpecialInlineSpanBase) {
+          final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
+          final int length = specialTs.actualText.length;
+          if (specialTs.start <= baseOffset) {
+            baseOffset += length - 1;
+            return true;
+          } else {
+            return false;
+          }
+        }
+        return true;
+      });
+      newExtent = TextPosition(
+        offset: baseOffset,
+        affinity:newExtent.affinity,
+      );
+    }
     /// bhlin
     if (intent is ExtendSelectionByCharacterIntent &&
         state.renderEditable.hasSpecialInlineSpanBase) {
