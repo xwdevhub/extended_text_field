@@ -3885,7 +3885,7 @@ class _UpdateTextSelectionAction<T extends DirectionalCaretMovementIntent>
         if (ts is SpecialInlineSpanBase) {
           final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
           final int length = specialTs.actualText.length;
-          if (specialTs.end <= baseOffset) {
+          if (specialTs.start < baseOffset) {
             offset -= length - 1;
             return true;
           } else {
@@ -3907,7 +3907,7 @@ class _UpdateTextSelectionAction<T extends DirectionalCaretMovementIntent>
         if (ts is SpecialInlineSpanBase) {
           final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
           final int length = specialTs.actualText.length;
-          if (specialTs.start <= baseOffset) {
+          if (specialTs.start < baseOffset) {
             baseOffset += length - 1;
             return true;
           } else {
@@ -4063,7 +4063,7 @@ class _UpdateTextSelectionToAdjacentLineAction<
       if (ts is SpecialInlineSpanBase) {
         final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
         final int length = specialTs.actualText.length;
-        if (specialTs.end <= oldBaseOffset) {
+        if (specialTs.start < baseOffset) {
           offset -= length - 1;
           return true;
         } else {
