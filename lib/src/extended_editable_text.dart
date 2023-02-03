@@ -1441,6 +1441,10 @@ class ExtendedEditableTextState
       if (filePaths.isNotEmpty) {
         return;
       }
+      Uint8List? imageValue = await Pasteboard.image;
+      if (imageValue != null) {
+        return;
+      }
     }
 
     // After the paste, the cursor should be collapsed and located after the
@@ -3877,7 +3881,7 @@ class _UpdateTextSelectionAction<T extends DirectionalCaretMovementIntent>
       );
     }
 
-     TextPosition extent = textBoundarySelection.extent;
+    TextPosition extent = textBoundarySelection.extent;
     if (intent.continuesAtWrap) {
       int baseOffset = textBoundarySelection.extent.offset;
       int offset = baseOffset;
@@ -3894,8 +3898,7 @@ class _UpdateTextSelectionAction<T extends DirectionalCaretMovementIntent>
         }
         return true;
       });
-      extent = TextPosition(
-          offset: offset,affinity:extent.affinity);
+      extent = TextPosition(offset: offset, affinity: extent.affinity);
     }
 
     TextPosition newExtent = intent.forward
@@ -3918,9 +3921,10 @@ class _UpdateTextSelectionAction<T extends DirectionalCaretMovementIntent>
       });
       newExtent = TextPosition(
         offset: baseOffset,
-        affinity:newExtent.affinity,
+        affinity: newExtent.affinity,
       );
     }
+
     /// bhlin
     if (intent is ExtendSelectionByCharacterIntent &&
         state.renderEditable.hasSpecialInlineSpanBase) {
@@ -4072,20 +4076,18 @@ class _UpdateTextSelectionToAdjacentLineAction<
       }
       return true;
     });
-    extent = TextPosition(
-        offset: offset,affinity:extent.affinity);
+    extent = TextPosition(offset: offset, affinity: extent.affinity);
     final VerticalCaretMovementRun currentRun = _verticalMovementRun ??
-        state.renderEditable
-            .startVerticalCaretMovement(extent);
+        state.renderEditable.startVerticalCaretMovement(extent);
 
     final bool shouldMove =
-    intent.forward ? currentRun.moveNext() : currentRun.movePrevious();
+        intent.forward ? currentRun.moveNext() : currentRun.movePrevious();
     TextPosition newExtent = shouldMove
         ? currentRun.current
         : (intent.forward
-        ? TextPosition(offset: state._value.text.length)
-        : const TextPosition(offset: 0));
-    if(shouldMove){
+            ? TextPosition(offset: state._value.text.length)
+            : const TextPosition(offset: 0));
+    if (shouldMove) {
       int baseOffset = newExtent.offset;
       state.renderEditable.text!.visitChildren((InlineSpan ts) {
         if (ts is SpecialInlineSpanBase) {
@@ -4105,7 +4107,6 @@ class _UpdateTextSelectionToAdjacentLineAction<
         affinity: newExtent.affinity,
       );
     }
-
 
     final TextSelection newSelection = collapseSelection
         ? TextSelection.fromPosition(newExtent)
