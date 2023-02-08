@@ -1515,7 +1515,7 @@ class ExtendedEditableTextState
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final AutofillGroupState? newAutofillGroup = AutofillGroup.of(context);
+    final AutofillGroupState? newAutofillGroup = AutofillGroup.maybeOf(context);
     if (currentAutofillScope != newAutofillGroup) {
       _currentAutofillScope?.unregister(autofillId);
       _currentAutofillScope = newAutofillGroup;
@@ -3028,7 +3028,7 @@ class ExtendedEditableTextState
                         textDirection: _textDirection,
                         locale: widget.locale,
                         textHeightBehavior: widget.textHeightBehavior ??
-                            DefaultTextHeightBehavior.of(context),
+                            DefaultTextHeightBehavior.maybeOf(context),
                         textWidthBasis: widget.textWidthBasis,
                         obscuringCharacter: widget.obscuringCharacter,
                         obscureText: widget.obscureText,
@@ -3251,7 +3251,30 @@ class ExtendedEditableTextState
       _textInputConnection!.setSelectionRects(rects);
     }
   }
+
+  @override
+  void didChangeInputControl(
+      TextInputControl? oldControl, TextInputControl? newControl) {
+    if (_hasFocus && _hasInputConnection) {
+      oldControl?.hide();
+      newControl?.show();
+    }
+  }
+
+  @override
+  void performSelector(String selectorName) {
+    final Intent? intent = intentForMacOSSelector(selectorName);
+
+    if (intent != null) {
+      final BuildContext? primaryContext = primaryFocus?.context;
+      if (primaryContext != null) {
+        Actions.invoke(primaryContext, intent);
+      }
+    }
+  }
 }
+
+
 
 class _Editable extends MultiChildRenderObjectWidget {
   _Editable({
