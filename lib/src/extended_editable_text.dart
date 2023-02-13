@@ -2969,15 +2969,22 @@ class ExtendedEditableTextState
       map.forEach((key, value) {
         String text = value as String;
         var regexImage = r"(\[image:(.*?)\])";
-        if (text.contains(regexImage)) {
+        if (text.contains("[image:") && text.contains("]")) {
           //图片
-          copyHtml5+='<img alt src="${text.replaceAll("[image:", "").replaceAll("]", "")}">';
-        }else{
-          copyHtml5+='<p> $text </p>">';
+          copyHtml5 +=
+          '<img alt src="${text.replaceAll("[image:", "").replaceAll(
+              "]", "")}">';
+        } else {
+          copyHtml5 += '<span> $text </span>';
         }
       });
-       RichClipboard.setData(RichClipboardData(
-        html: copyHtml5,
+
+      RichClipboard.setData(RichClipboardData(
+        html: "<html>"
+            "<body>"
+            '$copyHtml5'
+            '</body>'
+            "</html>",
       ));
     } else {
       if (isText) {
