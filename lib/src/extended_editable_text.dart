@@ -18,6 +18,7 @@ import 'package:flutter/rendering.dart' hide VerticalCaretMovementRun;
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:pasteboard/pasteboard.dart';
+import 'package:rich_clipboard/rich_clipboard.dart';
 
 // The time it takes for the cursor to fade from fully opaque to fully
 // transparent and vice versa. A full cursor blink, from transparent to opaque
@@ -1280,6 +1281,7 @@ class ExtendedEditableTextState
   ExtendedTextSelectionOverlay? _selectionOverlay;
 
   ScrollController? _internalScrollController;
+
   ScrollController get _scrollController =>
       widget.scrollController ??
       (_internalScrollController ??= ScrollController());
@@ -1293,6 +1295,7 @@ class ExtendedEditableTextState
   bool _didAutoFocus = false;
 
   AutofillGroupState? _currentAutofillScope;
+
   @override
   AutofillScope? get currentAutofillScope => _currentAutofillScope;
 
@@ -1346,6 +1349,7 @@ class ExtendedEditableTextState
 
   @override
   bool get selectAllEnabled => widget.toolbarOptions.selectAll;
+
   void _onChangedClipboardStatus() {
     setState(() {
       // Inform the widget that the value of clipboardStatus has changed.
@@ -1364,12 +1368,12 @@ class ExtendedEditableTextState
   @override
   void copySelection(SelectionChangedCause cause) {
     final TextSelection selection = textEditingValue.selection;
-    final String text = textEditingValue.text;
+    // final String text = textEditingValue.text;
     assert(selection != null);
     if (selection.isCollapsed) {
       return;
     }
-    Clipboard.setData(ClipboardData(text: selection.textInside(text)));
+    _copyText(selection);
     if (cause == SelectionChangedCause.toolbar) {
       bringIntoView(textEditingValue.selection.extent);
       hideToolbar(false);
@@ -1403,12 +1407,13 @@ class ExtendedEditableTextState
       return;
     }
     final TextSelection selection = textEditingValue.selection;
-    final String text = textEditingValue.text;
+    // final String text = textEditingValue.text;
     assert(selection != null);
     if (selection.isCollapsed) {
       return;
     }
-    Clipboard.setData(ClipboardData(text: selection.textInside(text)));
+    _copyText(selection);
+    // Clipboard.setData(ClipboardData(text: selection.textInside(text)));
     _replaceText(ReplaceTextIntent(textEditingValue, '', selection, cause));
     if (cause == SelectionChangedCause.toolbar) {
       bringIntoView(textEditingValue.selection.extent);
@@ -1989,11 +1994,13 @@ class ExtendedEditableTextState
   }
 
   TextEditingValue get _value => widget.controller.value;
+
   set _value(TextEditingValue value) {
     widget.controller.value = value;
   }
 
   bool get _hasFocus => widget.focusNode.hasFocus;
+
   bool get _isMultiline => widget.maxLines != 1;
 
   // Finds the closest scroll offset to the current scroll offset that fully
@@ -2120,6 +2127,7 @@ class ExtendedEditableTextState
   }
 
   bool _restartConnectionScheduled = false;
+
   void _scheduleRestartConnection() {
     if (_restartConnectionScheduled) {
       return;
@@ -2287,6 +2295,7 @@ class ExtendedEditableTextState
   }
 
   Rect? _currentCaretRect;
+
   // ignore: use_setters_to_change_properties, (this is used as a callback, can't be a setter)
   void _handleCaretChanged(Rect caretRect) {
     _currentCaretRect = caretRect;
@@ -2539,7 +2548,9 @@ class ExtendedEditableTextState
     _updateOrDisposeSelectionOverlayIfNeeded();
     // TODO(abarth): Teach RenderEditable about ValueNotifier<TextEditingValue>
     // to avoid this setState().
-    setState(() {/* We use widget.controller.value in build(). */});
+    setState(() {
+      /* We use widget.controller.value in build(). */
+    });
     _adjacentLineAction.stopCurrentVerticalRunIfSelectionChanges();
   }
 
@@ -2890,6 +2901,101 @@ class ExtendedEditableTextState
           .replaced(intent.replacementRange, intent.replacementText),
       intent.cause,
     );
+  }
+
+  void _copyText(TextSelection selection) {
+    int selectLength = 0;
+    int start = selection.start;
+    int end = selection.end;
+    Map map = {};
+    int index = 0;
+    bool isText = false;
+    bool isImage = false;
+    renderEditable.text!.visitChildren((InlineSpan ts) {
+      if (ts is SpecialInlineSpanBase) {
+        if (ts is ImageSpan) {
+          final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
+          if (start > specialTs.start) {
+            selectLength += ts.actualText.length;
+            return true;
+          }
+          if (end <= specialTs.start) {
+            return false;
+          } else {
+            isImage = true;
+            map[index] = ts.actualText;
+            index++;
+            selectLength += ts.actualText.length;
+            return true;
+          }
+        }
+      } else {
+        if (ts is TextSpan) {
+          if (ts.text != null && ts.text!.isEmpty) {
+            return true;
+          }
+          if (start >= selectLength + ts.text!.length) {
+            selectLength += ts.text!.length;
+            return true;
+          }
+
+          if (end <= selectLength) {
+            return false;
+          }
+          isText = true;
+          if (start > selectLength) {
+            if (selectLength + ts.text!.length > end) {
+              map[index] =
+                  ts.text!.substring(start - selectLength, end - selectLength);
+            } else {
+              map[index] =
+                  ts.text!.substring(start - selectLength, ts.text!.length);
+            }
+          } else {
+            if (selectLength + ts.text!.length > end) {
+              map[index] = ts.text!.substring(0, end - selectLength);
+            } else {
+              map[index] = ts.text!.substring(0, ts.text!.length);
+            }
+          }
+          index++;
+          selectLength += ts.text!.length;
+        }
+      }
+      return true;
+    });
+    if (isText && isImage) {
+      String copyHtml5 = "";
+      map.forEach((key, value) {
+        String text = value as String;
+        var regexImage = r"(\[image:(.*?)\])";
+        if (text.contains(regexImage)) {
+          //图片
+          copyHtml5+='<img alt src="${text.replaceAll("[image:", "").replaceAll("]", "")}">';
+        }else{
+          copyHtml5+='<p> $text </p>">';
+        }
+      });
+       RichClipboard.setData(RichClipboardData(
+        html: copyHtml5,
+      ));
+    } else {
+      if (isText) {
+        String text = "";
+        map.forEach((key, value) {
+          text += value;
+        });
+        Clipboard.setData(ClipboardData(text: text));
+      }
+      if (isImage) {
+        List<String> list = [];
+        map.forEach((key, value) {
+          list.add(
+              (value as String).replaceAll("[image:", "").replaceAll("]", ""));
+        });
+        Pasteboard.writeFiles(list);
+      }
+    }
   }
 
   late final Action<ReplaceTextIntent> _replaceTextAction =
@@ -3274,8 +3380,6 @@ class ExtendedEditableTextState
   }
 }
 
-
-
 class _Editable extends MultiChildRenderObjectWidget {
   _Editable({
     Key? key,
@@ -3527,6 +3631,7 @@ class _CodeUnitBoundary extends _TextBoundary {
   @override
   TextPosition getLeadingTextBoundaryAt(TextPosition position) =>
       TextPosition(offset: position.offset);
+
   @override
   TextPosition getTrailingTextBoundaryAt(TextPosition position) => TextPosition(
       offset: math.min(position.offset + 1, textEditingValue.text.length));
@@ -3678,6 +3783,7 @@ class _DocumentBoundary extends _TextBoundary {
   @override
   TextPosition getLeadingTextBoundaryAt(TextPosition position) =>
       const TextPosition(offset: 0);
+
   @override
   TextPosition getTrailingTextBoundaryAt(TextPosition position) {
     return TextPosition(
