@@ -1450,6 +1450,10 @@ class ExtendedEditableTextState
       if (imageValue != null) {
         return;
       }
+      String? html = await Pasteboard.html;
+      if (html != null&&html.isNotEmpty) {
+        return;
+      }
     }
 
     // After the paste, the cursor should be collapsed and located after the
