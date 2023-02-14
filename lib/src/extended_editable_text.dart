@@ -2913,21 +2913,32 @@ class ExtendedEditableTextState
     bool isImage = false;
     renderEditable.text!.visitChildren((InlineSpan ts) {
       if (ts is SpecialInlineSpanBase) {
-        if (ts is ImageSpan) {
-          final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
-          if (start > specialTs.start) {
-            selectLength += ts.actualText.length;
-            return true;
-          }
-          if (end <= specialTs.start) {
-            return false;
-          } else {
+        final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
+        if (start > specialTs.start) {
+          selectLength += specialTs.actualText.length;
+          return true;
+        }
+        if (end <= specialTs.start) {
+          return false;
+        } else {
+          if (ts is ImageSpan) {
             isImage = true;
             map[index] = ts.actualText;
             index++;
             selectLength += ts.actualText.length;
             return true;
+          }else if(ts is ExtendedWidgetSpan){
+            if(ts.child is Text){
+              isText =true;
+              Text text =ts.child as Text;
+              map[index] =text.data;
+            }else{
+              map[index] = ts.actualText;
+            }
+            index++;
+            selectLength += ts.actualText.length;
           }
+
         }
       } else {
         if (ts is TextSpan) {
@@ -2975,7 +2986,7 @@ class ExtendedEditableTextState
           '<img alt src="${text.replaceAll("[image:", "").replaceAll(
               "]", "")}">';
         } else {
-          copyHtml5 += '<span> $text </span>';
+          copyHtml5 += '<span>$text</span>';
         }
       });
 
