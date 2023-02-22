@@ -3013,7 +3013,7 @@ class ExtendedEditableTextState
         List<String> list = [];
         map.forEach((key, value) {
           list.add(
-              (value as String).replaceAll("[image:", "").replaceAll("]", ""));
+              (value as String).replaceAll("[image:", "").replaceAll(" ]", ""));
         });
         Pasteboard.writeFiles(list);
       }
