@@ -2984,11 +2984,11 @@ class ExtendedEditableTextState
       map.forEach((key, value) {
         String text = value as String;
         var regexImage = r"(\[image:(.*?)\])";
-        if (text.contains("[image:") && text.contains("]")) {
+        if (text.contains("[image:") && text.contains(" ]")) {
           //图片
           copyHtml5 +=
           '<img alt src="${text.replaceAll("[image:", "").replaceAll(
-              "]", "")}">';
+              " ]", "")}">';
         } else {
           copyHtml5 += '<span>$text</span>';
         }
