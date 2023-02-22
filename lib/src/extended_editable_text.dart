@@ -2926,7 +2926,11 @@ class ExtendedEditableTextState
           return false;
         } else {
           if (ts is ImageSpan) {
-            isImage = true;
+            if(ts.actualText.contains("[image")){
+              isImage = true;
+            }else{
+              isText =true;
+            }
             map[index] = ts.actualText.trim();
             index++;
             selectLength += ts.actualText.length;
