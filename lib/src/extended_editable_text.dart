@@ -120,6 +120,7 @@ class ExtendedEditableText extends StatefulWidget {
     required this.controller,
     required this.focusNode,
     this.readOnly = false,
+    this.historyId = '',
     this.obscuringCharacter = '•',
     this.obscureText = false,
     this.autocorrect = true,
@@ -201,6 +202,7 @@ class ExtendedEditableText extends StatefulWidget {
         assert(showSelectionHandles != null),
         assert(enableInteractiveSelection != null),
         assert(readOnly != null),
+        assert(historyId != null),
         assert(forceLine != null),
         assert(style != null),
         assert(cursorColor != null),
@@ -293,6 +295,9 @@ class ExtendedEditableText extends StatefulWidget {
   /// Defaults to false. Must not be null.
   /// {@endtemplate}
   final bool readOnly;
+
+  /// 输入历史id，撤回使用
+  final String historyId;
 
   /// Whether the text will take the full width regardless of the text width.
   ///
@@ -1451,7 +1456,7 @@ class ExtendedEditableTextState
         return;
       }
       String? html = await Pasteboard.html;
-      if (html != null&&html.isNotEmpty) {
+      if (html != null && html.isNotEmpty) {
         return;
       }
     }
@@ -2926,27 +2931,26 @@ class ExtendedEditableTextState
           return false;
         } else {
           if (ts is ImageSpan) {
-            if(ts.actualText.contains("[image")){
+            if (ts.actualText.contains("[image")) {
               isImage = true;
-            }else{
-              isText =true;
+            } else {
+              isText = true;
             }
             map[index] = ts.actualText.trim();
             index++;
             selectLength += ts.actualText.length;
             return true;
-          }else if(ts is ExtendedWidgetSpan){
-            if(ts.child is Text){
-              isText =true;
-              Text text =ts.child as Text;
-              map[index] =text.data;
-            }else{
+          } else if (ts is ExtendedWidgetSpan) {
+            if (ts.child is Text) {
+              isText = true;
+              Text text = ts.child as Text;
+              map[index] = text.data;
+            } else {
               map[index] = ts.actualText;
             }
             index++;
             selectLength += ts.actualText.length;
           }
-
         }
       } else {
         if (ts is TextSpan) {
@@ -2991,8 +2995,7 @@ class ExtendedEditableTextState
         if (text.contains("[image:") && text.contains(" ]")) {
           //图片
           copyHtml5 +=
-          '<img alt src="${text.replaceAll("[image:", "").replaceAll(
-              " ]", "")}">';
+              '<img alt src="${text.replaceAll("[image:", "").replaceAll(" ]", "")}">';
         } else {
           copyHtml5 += '<span>$text</span>';
         }
@@ -3097,6 +3100,7 @@ class ExtendedEditableTextState
         actions: _actions,
         child: _TextEditingHistory(
           controller: widget.controller,
+          historyId: widget.historyId,
           onTriggered: (TextEditingValue value) {
             userUpdateTextEditingValue(value, SelectionChangedCause.keyboard);
           },
@@ -4342,6 +4346,7 @@ class _TextEditingHistory extends StatefulWidget {
     required this.child,
     required this.controller,
     required this.onTriggered,
+    this.historyId = '',
   });
 
   /// The child widget of [_TextEditingHistory].
@@ -4359,6 +4364,9 @@ class _TextEditingHistory extends StatefulWidget {
   /// It is also not called when the controller is changed for reasons other
   /// than undo/redo.
   final TextEditingValueCallback onTriggered;
+
+  /// 输入历史id，撤回使用
+  final String historyId;
 
   @override
   State<_TextEditingHistory> createState() => _TextEditingHistoryState();
@@ -4421,6 +4429,14 @@ class _TextEditingHistoryState extends State<_TextEditingHistory> {
       _stack.clear();
       oldWidget.controller.removeListener(_push);
       widget.controller.addListener(_push);
+    }
+
+    if (widget.historyId != oldWidget.historyId) {
+      _stack.clear();
+      if (widget.controller.text.isNotEmpty) {
+        _stack.push(const TextEditingValue(text: ''));
+      }
+      _push();
     }
   }
 

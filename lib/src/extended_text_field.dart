@@ -203,6 +203,7 @@ class ExtendedTextField extends StatefulWidget {
     this.textAlignVertical,
     this.textDirection,
     this.readOnly = false,
+    this.historyId = '',
     ToolbarOptions? toolbarOptions,
     this.showCursor,
     this.autofocus = false,
@@ -250,6 +251,7 @@ class ExtendedTextField extends StatefulWidget {
     this.offsetFunction,
   })  : assert(textAlign != null),
         assert(readOnly != null),
+        assert(historyId != null),
         assert(autofocus != null),
         assert(obscuringCharacter != null && obscuringCharacter.length == 1),
         assert(obscureText != null),
@@ -453,6 +455,9 @@ class ExtendedTextField extends StatefulWidget {
 
   /// {@macro flutter.widgets.editableText.readOnly}
   final bool readOnly;
+
+  /// 输入历史id，撤回使用
+  final String historyId;
 
   /// Configuration of toolbar options.
   ///
@@ -1302,6 +1307,7 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
           key: editableTextKey,
           specialTextSpanBuilder: widget.specialTextSpanBuilder,
           readOnly: widget.readOnly || !_isEnabled,
+          historyId: widget.historyId,
           toolbarOptions: widget.toolbarOptions,
           showCursor: widget.showCursor,
           showSelectionHandles: _showSelectionHandles,
@@ -1410,10 +1416,10 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
       onEnter: (PointerEnterEvent event) => _handleHover(true),
       onExit: (PointerExitEvent event) => _handleHover(false),
       child:
-      // we didn't join the tap region
-      // TextFieldTapRegion(
-      //   child:
-      IgnorePointer(
+          // we didn't join the tap region
+          // TextFieldTapRegion(
+          //   child:
+          IgnorePointer(
         ignoring: !_isEnabled,
         child: AnimatedBuilder(
           animation: controller, // changes the _currentLength
@@ -1424,12 +1430,12 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
               onTap: widget.readOnly
                   ? null
                   : () {
-                if (!_effectiveController.selection.isValid)
-                  _effectiveController.selection =
-                      TextSelection.collapsed(
-                          offset: _effectiveController.text.length);
-                _requestKeyboard();
-              },
+                      if (!_effectiveController.selection.isValid)
+                        _effectiveController.selection =
+                            TextSelection.collapsed(
+                                offset: _effectiveController.text.length);
+                      _requestKeyboard();
+                    },
               onDidGainAccessibilityFocus: handleDidGainAccessibilityFocus,
               child: child,
             );
