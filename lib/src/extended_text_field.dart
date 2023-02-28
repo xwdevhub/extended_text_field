@@ -837,6 +837,8 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
   late CommonTextSelectionGestureDetectorBuilder
       _selectionGestureDetectorBuilder;
 
+  var baseOffset = -1;
+
   // API for TextSelectionGestureDetectorBuilderDelegate.
   @override
   late bool forcePressEnabled;
@@ -953,7 +955,7 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
           widget.textSelectionGestureDetectorBuilder!(
         delegate: this,
         hideToolbar: () {
-          _editableText!.hideToolbar();
+          // _editableText!.hideToolbar();
         },
         showToolbar: () {
           _editableText!.showToolbar(
@@ -969,7 +971,7 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
           CommonTextSelectionGestureDetectorBuilder(
         delegate: this,
         hideToolbar: () {
-          _editableText!.hideToolbar();
+          // _editableText!.hideToolbar();
         },
         showToolbar: () {
           _editableText!.showToolbar(
@@ -981,6 +983,21 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
         requestKeyboard: _requestKeyboard,
       );
     }
+  }
+
+  void _dealTapAction() {
+    var offset = _effectiveController.selection.baseOffset;
+    if (_editableText!.isVisible() ||
+        _effectiveFocusNode.hasFocus == false ||
+        this.baseOffset != offset) {
+      _editableText!.hideToolbar();
+    } else {
+      _editableText!.showToolbar(
+        showToolbarInWeb: _selectionGestureDetectorBuilder.showToolbarInWeb,
+      );
+    }
+    this.baseOffset = offset;
+    widget.onTap?.call();
   }
 
   bool get _canRequestFocus {
@@ -1097,6 +1114,9 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
   }
 
   void _handleFocusChanged() {
+    if (_effectiveFocusNode.hasFocus == false) {
+      baseOffset = -1;
+    }
     setState(() {
       // Rebuild the widget on focus change to show/hide the text selection
       // highlight.

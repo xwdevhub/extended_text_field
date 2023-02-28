@@ -2733,6 +2733,9 @@ class ExtendedEditableTextState
     }
   }
 
+  bool isVisible() =>
+      _selectionOverlay != null && _selectionOverlay!.toolbarIsVisible;
+
   // Tracks the location a [_ScribblePlaceholder] should be rendered in the
   // text.
   //
