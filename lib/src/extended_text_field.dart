@@ -1,5 +1,6 @@
 // ignore_for_file: unnecessary_null_comparison, always_put_control_body_on_new_line
 
+import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:extended_text_field/src/extended_editable_text.dart';
 import 'package:extended_text_library/extended_text_library.dart';
@@ -955,7 +956,9 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
           widget.textSelectionGestureDetectorBuilder!(
         delegate: this,
         hideToolbar: () {
-          // _editableText!.hideToolbar();
+          if (!Platform.isAndroid && !Platform.isIOS) {
+            _editableText!.hideToolbar();
+          }
         },
         showToolbar: () {
           _editableText!.showToolbar(
@@ -971,7 +974,9 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
           CommonTextSelectionGestureDetectorBuilder(
         delegate: this,
         hideToolbar: () {
-          // _editableText!.hideToolbar();
+          if (!Platform.isAndroid && !Platform.isIOS) {
+            _editableText!.hideToolbar();
+          }
         },
         showToolbar: () {
           _editableText!.showToolbar(
@@ -986,17 +991,19 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
   }
 
   void _dealTapAction() {
-    var offset = _effectiveController.selection.baseOffset;
-    if (_editableText!.isVisible() ||
-        _effectiveFocusNode.hasFocus == false ||
-        this.baseOffset != offset) {
-      _editableText!.hideToolbar();
-    } else {
-      _editableText!.showToolbar(
-        showToolbarInWeb: _selectionGestureDetectorBuilder.showToolbarInWeb,
-      );
+    if (!Platform.isAndroid && !Platform.isIOS) {
+      var offset = _effectiveController.selection.baseOffset;
+      if (_editableText!.isVisible() ||
+          _effectiveFocusNode.hasFocus == false ||
+          this.baseOffset != offset) {
+        _editableText!.hideToolbar();
+      } else {
+        _editableText!.showToolbar(
+          showToolbarInWeb: _selectionGestureDetectorBuilder.showToolbarInWeb,
+        );
+      }
+      this.baseOffset = offset;
     }
-    this.baseOffset = offset;
     widget.onTap?.call();
   }
 
