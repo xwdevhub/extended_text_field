@@ -991,7 +991,7 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
   }
 
   void _dealTapAction() {
-    if (!Platform.isAndroid && !Platform.isIOS) {
+    if (Platform.isAndroid || Platform.isIOS) {
       var offset = _effectiveController.selection.baseOffset;
       if (_editableText!.isVisible() ||
           _effectiveFocusNode.hasFocus == false ||
