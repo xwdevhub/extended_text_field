@@ -965,7 +965,7 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
             showToolbarInWeb: _selectionGestureDetectorBuilder.showToolbarInWeb,
           );
         },
-        onTap: widget.onTap,
+        onTap: _dealTapAction,
         context: context,
         requestKeyboard: _requestKeyboard,
       );
@@ -983,7 +983,7 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
             showToolbarInWeb: _selectionGestureDetectorBuilder.showToolbarInWeb,
           );
         },
-        onTap: widget.onTap,
+        onTap: _dealTapAction,
         context: context,
         requestKeyboard: _requestKeyboard,
       );
