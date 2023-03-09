@@ -1470,10 +1470,6 @@ class ExtendedEditableTextState
       selection: TextSelection.collapsed(offset: lastSelectionIndex),
     );
     String? text = data.text;
-    if (data.text != null) {
-      text = data.text!.split('\n').map((e) => e.trim() + '\n').toList().join();
-      text = text.trimRight();
-    }
     userUpdateTextEditingValue(
       collapsedTextEditingValue.replaced(selection, text!),
       cause,
