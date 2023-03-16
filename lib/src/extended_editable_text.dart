@@ -251,7 +251,7 @@ class ExtendedEditableText extends StatefulWidget {
   ///build your ccustom text span
   final SpecialTextSpanBuilder? specialTextSpanBuilder;
 
-  final VoidCallback? pasteTextIntercept;
+  final Function? pasteTextIntercept;
 
   /// Controls the text being edited.
   final TextEditingController controller;
@@ -1299,6 +1299,8 @@ class ExtendedEditableTextState
 
   bool _didAutoFocus = false;
 
+  bool _shouldShowCaret=false;
+
   AutofillGroupState? _currentAutofillScope;
 
   @override
@@ -1432,44 +1434,49 @@ class ExtendedEditableTextState
     if (widget.readOnly) {
       return;
     }
+    await widget.pasteTextIntercept?.call();
+    // Snapshot the input before using `await`.
+    // See https://github.com/flutter/flutter/issues/11427
+    final ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
+    String? text;
+    if (data == null) {
+      text="";
+    }else{
+      text = data.text;
+    }
+    /// 过滤粘贴板上的文件
+    if (!Platform.isAndroid) {
+      final List<String> filePaths = await Pasteboard.files();
+      if (filePaths.isNotEmpty) {
+        _shouldShowCaret=true;
+        text="";
+      }else{
+        Uint8List? imageValue = await Pasteboard.image;
+        if (imageValue != null) {
+          _shouldShowCaret=true;
+          text="";
+        }
+      }
+
+      String? html = await Pasteboard.html;
+      if (html != null && html.isNotEmpty) {
+        _shouldShowCaret=true;
+        text="";
+      }
+    }
     final TextSelection selection = textEditingValue.selection;
     assert(selection != null);
     if (!selection.isValid) {
       return;
     }
-    widget.pasteTextIntercept?.call();
-    // Snapshot the input before using `await`.
-    // See https://github.com/flutter/flutter/issues/11427
-    final ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
-    if (data == null) {
-      return;
-    }
-
-    /// 过滤粘贴板上的文件
-    if (!Platform.isAndroid) {
-      final List<String> filePaths = await Pasteboard.files();
-      if (filePaths.isNotEmpty) {
-        return;
-      }
-      Uint8List? imageValue = await Pasteboard.image;
-      if (imageValue != null) {
-        return;
-      }
-      String? html = await Pasteboard.html;
-      if (html != null && html.isNotEmpty) {
-        return;
-      }
-    }
-
     // After the paste, the cursor should be collapsed and located after the
     // pasted content.
     final int lastSelectionIndex =
-        math.max(selection.baseOffset, selection.extentOffset);
+    math.max(selection.baseOffset, selection.extentOffset);
     final TextEditingValue collapsedTextEditingValue =
-        textEditingValue.copyWith(
+    textEditingValue.copyWith(
       selection: TextSelection.collapsed(offset: lastSelectionIndex),
     );
-    String? text = data.text;
     userUpdateTextEditingValue(
       collapsedTextEditingValue.replaced(selection, text!),
       cause,
@@ -2666,7 +2673,10 @@ class ExtendedEditableTextState
     // TextEditingValue value, in case the formatter would reject the change.
     final bool shouldShowCaret =
         widget.readOnly ? _value.selection != value.selection : _value != value;
-    if (shouldShowCaret) {
+    if (shouldShowCaret||_shouldShowCaret) {
+      if(_shouldShowCaret){
+        _shouldShowCaret=false;
+      }
       _scheduleShowCaretOnScreen();
     }
     _formatAndSetValue(value, cause, userInteraction: true);
