@@ -4251,7 +4251,7 @@ class _UpdateTextSelectionToAdjacentLineAction<
         if (ts is SpecialInlineSpanBase) {
           final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
           final int length = specialTs.actualText.length;
-          if (specialTs.start <= baseOffset) {
+          if (specialTs.start < baseOffset) {
             baseOffset += length - 1;
             return true;
           } else {
