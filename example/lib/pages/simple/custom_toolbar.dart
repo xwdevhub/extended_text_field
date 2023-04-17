@@ -131,7 +131,7 @@ class MyCommonTextSelectionGestureDetectorBuilder
     super.onTapDown(details);
 
     /// always show toolbar
-    shouldShowSelectionToolbar = true;
+    // shouldShowSelectionToolbar = true;
   }
 
   @override
