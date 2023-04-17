@@ -99,6 +99,7 @@ class VerticalCaretMovementRun extends Iterator<TextPosition> {
   final ExtendedRenderEditable _editable;
 
   bool _isValid = true;
+
   /// Whether this [VerticalCaretMovementRun] can still continue.
   ///
   /// A [VerticalCaretMovementRun] run is valid if the underlying text layout
@@ -110,7 +111,8 @@ class VerticalCaretMovementRun extends Iterator<TextPosition> {
     if (!_isValid) {
       return false;
     }
-    final List<ui.LineMetrics> newLineMetrics = _editable._textPainter.computeLineMetrics();
+    final List<ui.LineMetrics> newLineMetrics =
+        _editable._textPainter.computeLineMetrics();
     // Use the implementation detail of the computeLineMetrics method to figure
     // out if the current text layout has been invalidated.
     if (!identical(newLineMetrics, _lineMetrics)) {
@@ -119,20 +121,25 @@ class VerticalCaretMovementRun extends Iterator<TextPosition> {
     return _isValid;
   }
 
-  final Map<int, MapEntry<Offset, TextPosition>> _positionCache = <int, MapEntry<Offset, TextPosition>>{};
+  final Map<int, MapEntry<Offset, TextPosition>> _positionCache =
+      <int, MapEntry<Offset, TextPosition>>{};
 
   MapEntry<Offset, TextPosition> _getTextPositionForLine(int lineNumber) {
     assert(isValid);
     assert(lineNumber >= 0);
-    final MapEntry<Offset, TextPosition>? cachedPosition = _positionCache[lineNumber];
+    final MapEntry<Offset, TextPosition>? cachedPosition =
+        _positionCache[lineNumber];
     if (cachedPosition != null) {
       return cachedPosition;
     }
     assert(lineNumber != _currentLine);
 
-    final Offset newOffset = Offset(_currentOffset.dx, _lineMetrics[lineNumber].baseline);
-    final TextPosition closestPosition = _editable._textPainter.getPositionForOffset(newOffset);
-    final MapEntry<Offset, TextPosition> position = MapEntry<Offset, TextPosition>(newOffset, closestPosition);
+    final Offset newOffset =
+        Offset(_currentOffset.dx, _lineMetrics[lineNumber].baseline);
+    final TextPosition closestPosition =
+        _editable._textPainter.getPositionForOffset(newOffset);
+    final MapEntry<Offset, TextPosition> position =
+        MapEntry<Offset, TextPosition>(newOffset, closestPosition);
     _positionCache[lineNumber] = position;
     return position;
   }
@@ -149,7 +156,8 @@ class VerticalCaretMovementRun extends Iterator<TextPosition> {
     if (_currentLine + 1 >= _lineMetrics.length) {
       return false;
     }
-    final MapEntry<Offset, TextPosition> position = _getTextPositionForLine(_currentLine + 1);
+    final MapEntry<Offset, TextPosition> position =
+        _getTextPositionForLine(_currentLine + 1);
     _currentLine += 1;
     _currentOffset = position.key;
     _currentTextPosition = position.value;
@@ -164,7 +172,8 @@ class VerticalCaretMovementRun extends Iterator<TextPosition> {
     if (_currentLine <= 0) {
       return false;
     }
-    final MapEntry<Offset, TextPosition> position = _getTextPositionForLine(_currentLine - 1);
+    final MapEntry<Offset, TextPosition> position =
+        _getTextPositionForLine(_currentLine - 1);
     _currentLine -= 1;
     _currentOffset = position.key;
     _currentTextPosition = position.value;
@@ -338,7 +347,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         _obscureText = obscureText,
         _readOnly = readOnly,
         _forceLine = forceLine,
-        _clipBehavior = clipBehavior{
+        _clipBehavior = clipBehavior {
     assert(_showCursor != null);
     assert(!_showCursor.value || cursorColor != null);
     this.hasFocus = hasFocus ?? false;
@@ -366,9 +375,11 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   ///whether to support build SpecialText
 
   bool supportSpecialText = false;
+
   @override
   bool get hasSpecialInlineSpanBase =>
       supportSpecialText && super.hasSpecialInlineSpanBase;
+
   @override
   void setupParentData(RenderBox child) {
     if (child.parentData is! TextParentData)
@@ -425,6 +436,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// `shouldRepaint` method returns true.
   ExtendedRenderEditablePainter? get foregroundPainter => _foregroundPainter;
   ExtendedRenderEditablePainter? _foregroundPainter;
+
   set foregroundPainter(ExtendedRenderEditablePainter? newPainter) {
     if (newPainter == _foregroundPainter) return;
     _updateForegroundPainter(newPainter);
@@ -458,6 +470,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// method returns true.
   ExtendedRenderEditablePainter? get painter => _painter;
   ExtendedRenderEditablePainter? _painter;
+
   set painter(ExtendedRenderEditablePainter? newPainter) {
     if (newPainter == _painter) {
       return;
@@ -467,14 +480,18 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   // Caret Painters:
   // The floating painter. This painter paints the regular caret as well.
-  late final _FloatingCursorPainter _caretPainter = _FloatingCursorPainter(_onCaretChanged, offsetFunction);
+  late final _FloatingCursorPainter _caretPainter =
+      _FloatingCursorPainter(_onCaretChanged, offsetFunction);
 
   // Text Highlight painters:
   final TextHighlightPainter _selectionPainter = TextHighlightPainter();
-  final TextHighlightPainter _autocorrectHighlightPainter = TextHighlightPainter();
+  final TextHighlightPainter _autocorrectHighlightPainter =
+      TextHighlightPainter();
 
-  _CompositeRenderEditablePainter get _builtInForegroundPainters => _cachedBuiltInForegroundPainters ??= _createBuiltInForegroundPainters();
+  _CompositeRenderEditablePainter get _builtInForegroundPainters =>
+      _cachedBuiltInForegroundPainters ??= _createBuiltInForegroundPainters();
   _CompositeRenderEditablePainter? _cachedBuiltInForegroundPainters;
+
   _CompositeRenderEditablePainter _createBuiltInForegroundPainters() {
     return _CompositeRenderEditablePainter(
       painters: <ExtendedRenderEditablePainter>[
@@ -483,8 +500,10 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     );
   }
 
-  _CompositeRenderEditablePainter get _builtInPainters => _cachedBuiltInPainters ??= _createBuiltInPainters();
+  _CompositeRenderEditablePainter get _builtInPainters =>
+      _cachedBuiltInPainters ??= _createBuiltInPainters();
   _CompositeRenderEditablePainter? _cachedBuiltInPainters;
+
   _CompositeRenderEditablePainter _createBuiltInPainters() {
     return _CompositeRenderEditablePainter(
       painters: <ExtendedRenderEditablePainter>[
@@ -503,17 +522,19 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   void debugAssertLayoutUpToDate() {
     assert(
       _textLayoutLastMaxWidth == constraints.maxWidth &&
-      _textLayoutLastMinWidth == constraints.minWidth,
+          _textLayoutLastMinWidth == constraints.minWidth,
       'Last width ($_textLayoutLastMinWidth, $_textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).',
     );
   }
 
   Rect? _lastCaretRect;
+
   // TODO(LongCatIsLooong): currently EditableText uses this callback to keep
   // the text field visible. But we don't always paint the caret, for example
   // when the selection is not collapsed.
   /// Called during the paint phase when the caret location changes.
   CaretChangedHandler? onCaretChanged;
+
   void _onCaretChanged(Rect caretRect) {
     if (_lastCaretRect != caretRect) {
       onCaretChanged?.call(caretRect);
@@ -537,6 +558,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   /// {@macro dart.ui.textHeightBehavior}
   TextHeightBehavior? get textHeightBehavior => _textPainter.textHeightBehavior;
+
   set textHeightBehavior(TextHeightBehavior? value) {
     if (_textPainter.textHeightBehavior == value) {
       return;
@@ -547,6 +569,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   /// {@macro flutter.painting.textPainter.textWidthBasis}
   TextWidthBasis get textWidthBasis => _textPainter.textWidthBasis;
+
   set textWidthBasis(TextWidthBasis value) {
     assert(value != null);
     if (_textPainter.textWidthBasis == value) {
@@ -561,6 +584,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// Should be obtained by querying MediaQuery for the devicePixelRatio.
   double get devicePixelRatio => _devicePixelRatio;
   double _devicePixelRatio;
+
   set devicePixelRatio(double value) {
     if (devicePixelRatio == value) {
       return;
@@ -574,6 +598,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// Cannot be null, and must have a length of exactly one.
   String get obscuringCharacter => _obscuringCharacter;
   String _obscuringCharacter;
+
   set obscuringCharacter(String value) {
     if (_obscuringCharacter == value) {
       return;
@@ -587,6 +612,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   @override
   bool get obscureText => _obscureText;
   bool _obscureText;
+
   set obscureText(bool value) {
     if (_obscureText == value) {
       return;
@@ -602,6 +628,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   @override
   ui.BoxHeightStyle get selectionHeightStyle =>
       _selectionPainter.selectionHeightStyle;
+
   set selectionHeightStyle(ui.BoxHeightStyle value) {
     _selectionPainter.selectionHeightStyle = value;
   }
@@ -612,6 +639,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   @override
   ui.BoxWidthStyle get selectionWidthStyle =>
       _selectionPainter.selectionWidthStyle;
+
   set selectionWidthStyle(ui.BoxWidthStyle value) {
     _selectionPainter.selectionWidthStyle = value;
   }
@@ -655,9 +683,12 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   final ValueNotifier<bool> _selectionEndInViewport = ValueNotifier<bool>(true);
 
   /// Returns the TextPosition above or below the given offset.
-  TextPosition _getTextPositionVertical(TextPosition position, double verticalOffset) {
-    final Offset caretOffset = _textPainter.getOffsetForCaret(position, _caretPrototype);
-    final Offset caretOffsetTranslated = caretOffset.translate(0.0, verticalOffset);
+  TextPosition _getTextPositionVertical(
+      TextPosition position, double verticalOffset) {
+    final Offset caretOffset =
+        _textPainter.getOffsetForCaret(position, _caretPrototype);
+    final Offset caretOffsetTranslated =
+        caretOffset.translate(0.0, verticalOffset);
     return _textPainter.getPositionForOffset(caretOffsetTranslated);
   }
 
@@ -702,6 +733,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     final double verticalOffset = 1.5 * preferredLineHeight;
     return _getTextPositionVertical(position, verticalOffset);
   }
+
   void _updateSelectionExtentsVisibility(
       Offset effectiveOffset, TextSelection selection) {
     ///zmt
@@ -741,7 +773,8 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         visibleRegion.inflate(visibleRegionSlop).contains(endOffset);
   }
 
-  void _setTextEditingValue(TextEditingValue newValue, SelectionChangedCause cause) {
+  void _setTextEditingValue(
+      TextEditingValue newValue, SelectionChangedCause cause) {
     textSelectionDelegate.userUpdateTextEditingValue(newValue, cause);
   }
 
@@ -794,8 +827,10 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     _textLayoutLastMaxWidth = null;
     _textLayoutLastMinWidth = null;
   }
+
   // Retuns a cached plain text version of the text in the painter.
   String? _cachedPlainText;
+
   @override
   String get plainText {
     _cachedPlainText ??= textSpanToActualText(_textPainter.text!);
@@ -808,6 +843,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   final TextPainter _textPainter;
   AttributedString? _cachedAttributedValue;
   List<InlineSpanSemanticsInformation>? _cachedCombinedSemanticsInfos;
+
   set text(InlineSpan? value) {
     if (_textPainter.text == value) {
       return;
@@ -826,6 +862,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   ///
   /// This must not be null.
   TextAlign get textAlign => _textPainter.textAlign;
+
   set textAlign(TextAlign value) {
     assert(value != null);
     if (_textPainter.textAlign == value) {
@@ -853,6 +890,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   // set it to null here, so _textPainter.textDirection cannot be null.
   @override
   TextDirection get textDirection => _textPainter.textDirection!;
+
   set textDirection(TextDirection value) {
     assert(value != null);
     if (_textPainter.textDirection == value) {
@@ -874,6 +912,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// If this value is null, a system-dependent algorithm is used to select
   /// the font.
   Locale? get locale => _textPainter.locale;
+
   set locale(Locale? value) {
     if (_textPainter.locale == value) {
       return;
@@ -885,6 +924,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// The [StrutStyle] used by the renderer's internal [TextPainter] to
   /// determine the strut to use.
   StrutStyle? get strutStyle => _textPainter.strutStyle;
+
   set strutStyle(StrutStyle? value) {
     if (_textPainter.strutStyle == value) {
       return;
@@ -895,6 +935,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   /// The color to use when painting the cursor.
   Color? get cursorColor => _caretPainter.caretColor;
+
   set cursorColor(Color? value) {
     _caretPainter.caretColor = value;
   }
@@ -904,6 +945,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   ///
   /// The default is light grey.
   Color? get backgroundCursorColor => _caretPainter.backgroundCursorColor;
+
   set backgroundCursorColor(Color? value) {
     _caretPainter.backgroundCursorColor = value;
   }
@@ -911,6 +953,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// Whether to paint the cursor.
   ValueNotifier<bool> get showCursor => _showCursor;
   ValueNotifier<bool> _showCursor;
+
   set showCursor(ValueNotifier<bool> value) {
     assert(value != null);
     if (_showCursor == value) {
@@ -934,6 +977,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   @override
   bool get forceLine => _forceLine;
   bool _forceLine = false;
+
   set forceLine(bool value) {
     assert(value != null);
     if (_forceLine == value) {
@@ -947,6 +991,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   @override
   bool get readOnly => _readOnly;
   bool _readOnly = false;
+
   set readOnly(bool value) {
     assert(value != null);
     if (_readOnly == value) {
@@ -968,6 +1013,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// also controls the height of the actual editing widget.
   int? get maxLines => _maxLines;
   int? _maxLines;
+
   /// The value may be null. If it is not null, then it must be greater than zero.
   set maxLines(int? value) {
     assert(value == null || value > 0);
@@ -986,6 +1032,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// {@macro flutter.widgets.editableText.minLines}
   int? get minLines => _minLines;
   int? _minLines;
+
   /// The value may be null. If it is not null, then it must be greater than zero.
   set minLines(int? value) {
     assert(value == null || value > 0);
@@ -999,6 +1046,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// {@macro flutter.widgets.editableText.expands}
   bool get expands => _expands;
   bool _expands;
+
   set expands(bool value) {
     assert(value != null);
     if (expands == value) {
@@ -1011,6 +1059,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// The color to use when painting the selection.
   @override
   Color? get selectionColor => _selectionPainter.highlightColor;
+
   @override
   set selectionColor(Color? value) {
     _selectionPainter.highlightColor = value;
@@ -1022,6 +1071,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// the specified font size.
   @override
   double get textScaleFactor => _textPainter.textScaleFactor;
+
   @override
   set textScaleFactor(double value) {
     assert(value != null);
@@ -1041,6 +1091,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   @override
   TextSelection? get selection => _selection;
   TextSelection? _selection;
+
   @override
   set selection(TextSelection? value) {
     if (_selection == value) {
@@ -1060,6 +1111,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   @override
   ViewportOffset get offset => _offset;
   ViewportOffset _offset;
+
   set offset(ViewportOffset value) {
     assert(value != null);
     if (_offset == value) {
@@ -1078,6 +1130,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// How thick the cursor will be.
   double get cursorWidth => _cursorWidth;
   double _cursorWidth = 1.0;
+
   set cursorWidth(double value) {
     if (_cursorWidth == value) {
       return;
@@ -1095,6 +1148,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   // TODO(ianh): This is a confusing API. We should have a separate getter for the effective cursor height.
   double get cursorHeight => _cursorHeight ?? preferredLineHeight;
   double? _cursorHeight;
+
   set cursorHeight(double? value) {
     if (_cursorHeight == value) {
       return;
@@ -1111,6 +1165,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// {@endtemplate}
   bool get paintCursorAboveText => _paintCursorOnTop;
   bool _paintCursorOnTop;
+
   set paintCursorAboveText(bool value) {
     if (_paintCursorOnTop == value) {
       return;
@@ -1133,6 +1188,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// location where the cursor ends up being rendered from by default.
   /// {@endtemplate}
   Offset get cursorOffset => _caretPainter.cursorOffset;
+
   set cursorOffset(Offset value) {
     _caretPainter.cursorOffset = value;
   }
@@ -1141,6 +1197,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   ///
   /// A null value is the same as [Radius.zero].
   Radius? get cursorRadius => _caretPainter.cursorRadius;
+
   set cursorRadius(Radius? value) {
     _caretPainter.cursorRadius = value;
   }
@@ -1152,6 +1209,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   @override
   LayerLink get startHandleLayerLink => _startHandleLayerLink;
   LayerLink _startHandleLayerLink;
+
   @override
   set startHandleLayerLink(LayerLink? value) {
     if (_startHandleLayerLink == value) {
@@ -1168,6 +1226,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   @override
   LayerLink get endHandleLayerLink => _endHandleLayerLink;
   LayerLink _endHandleLayerLink;
+
   @override
   set endHandleLayerLink(LayerLink? value) {
     if (_endHandleLayerLink == value) {
@@ -1201,6 +1260,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// [selectionEnabled] instead.
   bool? get enableInteractiveSelection => _enableInteractiveSelection;
   bool? _enableInteractiveSelection;
+
   set enableInteractiveSelection(bool? value) {
     if (_enableInteractiveSelection == value) {
       return;
@@ -1241,6 +1301,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   // (otherwise, if you set it to null and then get it, you get back non-null).
   // Alternatively, we could stop supporting setting this to null.
   Color? get promptRectColor => _autocorrectHighlightPainter.highlightColor;
+
   set promptRectColor(Color? newValue) {
     _autocorrectHighlightPainter.highlightColor = newValue;
   }
@@ -1272,6 +1333,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// Defaults to [Clip.hardEdge], and must not be null.
   Clip get clipBehavior => _clipBehavior;
   Clip _clipBehavior = Clip.hardEdge;
+
   set clipBehavior(Clip value) {
     assert(value != null);
     if (value != _clipBehavior) {
@@ -1296,9 +1358,10 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// See [TextPainter.getBoxesForSelection] for more details.
   List<Rect> getBoxesForSelection(TextSelection selection) {
     computeTextMetricsIfNeeded();
-    return _textPainter.getBoxesForSelection(selection)
-                       .map((TextBox textBox) => textBox.toRect().shift(paintOffset))
-                       .toList();
+    return _textPainter
+        .getBoxesForSelection(selection)
+        .map((TextBox textBox) => textBox.toRect().shift(paintOffset))
+        .toList();
   }
 
   @override
@@ -1370,12 +1433,14 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       if (_textPainter.getOffsetBefore(selection!.extentOffset) != null) {
         config
           ..onMoveCursorBackwardByWord = _handleMoveCursorBackwardByWord
-          ..onMoveCursorBackwardByCharacter = _handleMoveCursorBackwardByCharacter;
+          ..onMoveCursorBackwardByCharacter =
+              _handleMoveCursorBackwardByCharacter;
       }
       if (_textPainter.getOffsetAfter(selection!.extentOffset) != null) {
         config
           ..onMoveCursorForwardByWord = _handleMoveCursorForwardByWord
-          ..onMoveCursorForwardByCharacter = _handleMoveCursorForwardByCharacter;
+          ..onMoveCursorForwardByCharacter =
+              _handleMoveCursorForwardByCharacter;
       }
     }
   }
@@ -1391,7 +1456,8 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   }
 
   @override
-  void assembleSemanticsNode(SemanticsNode node, SemanticsConfiguration config, Iterable<SemanticsNode> children) {
+  void assembleSemanticsNode(SemanticsNode node, SemanticsConfiguration config,
+      Iterable<SemanticsNode> children) {
     assert(_semanticsInfo != null && _semanticsInfo!.isNotEmpty);
     final List<SemanticsNode> newChildren = <SemanticsNode>[];
     TextDirection currentDirection = textDirection;
@@ -1401,9 +1467,11 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     int placeholderIndex = 0;
     int childIndex = 0;
     RenderBox? child = firstChild;
-    final LinkedHashMap<Key, SemanticsNode> newChildCache = LinkedHashMap<Key, SemanticsNode>();
+    final LinkedHashMap<Key, SemanticsNode> newChildCache =
+        LinkedHashMap<Key, SemanticsNode>();
     _cachedCombinedSemanticsInfos ??= combineSemanticsInfo(_semanticsInfo!);
-    for (final InlineSpanSemanticsInformation info in _cachedCombinedSemanticsInfos!) {
+    for (final InlineSpanSemanticsInformation info
+        in _cachedCombinedSemanticsInfos!) {
       final TextSelection selection = TextSelection(
         baseOffset: start,
         extentOffset: start + info.text.length,
@@ -1414,9 +1482,12 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         // A placeholder span may have 0 to multiple semantics nodes, we need
         // to annotate all of the semantics nodes belong to this span.
         while (children.length > childIndex &&
-               children.elementAt(childIndex).isTagged(PlaceholderSpanIndexSemanticsTag(placeholderIndex))) {
+            children
+                .elementAt(childIndex)
+                .isTagged(PlaceholderSpanIndexSemanticsTag(placeholderIndex))) {
           final SemanticsNode childNode = children.elementAt(childIndex);
-          final TextParentData parentData = child!.parentData! as TextParentData;
+          final TextParentData parentData =
+              child!.parentData! as TextParentData;
           assert(parentData.scale != null);
           childNode.rect = Rect.fromLTWH(
             childNode.rect.left,
@@ -1431,7 +1502,8 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         placeholderIndex += 1;
       } else {
         final TextDirection initialDirection = currentDirection;
-        final List<ui.TextBox> rects = _textPainter.getBoxesForSelection(selection);
+        final List<ui.TextBox> rects =
+            _textPainter.getBoxesForSelection(selection);
         if (rects.isEmpty) {
           continue;
         }
@@ -1460,7 +1532,8 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         final SemanticsConfiguration configuration = SemanticsConfiguration()
           ..sortKey = OrdinalSortKey(ordinal++)
           ..textDirection = initialDirection
-          ..attributedLabel = AttributedString(info.semanticsLabel ?? info.text, attributes: info.stringAttributes);
+          ..attributedLabel = AttributedString(info.semanticsLabel ?? info.text,
+              attributes: info.stringAttributes);
         final GestureRecognizer? recognizer = info.recognizer;
         if (recognizer != null) {
           if (recognizer is TapGestureRecognizer) {
@@ -1482,7 +1555,8 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
           }
         }
         if (node.parentPaintClipRect != null) {
-          final Rect paintRect = node.parentPaintClipRect!.intersect(currentRect);
+          final Rect paintRect =
+              node.parentPaintClipRect!.intersect(currentRect);
           configuration.isHidden = paintRect.isEmpty && !currentRect.isEmpty;
         }
         late final SemanticsNode newChild;
@@ -1523,11 +1597,13 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   void _handleMoveCursorForwardByCharacter(bool extendSelection) {
     assert(selection != null);
-    final int? extentOffset = _textPainter.getOffsetAfter(selection!.extentOffset);
+    final int? extentOffset =
+        _textPainter.getOffsetAfter(selection!.extentOffset);
     if (extentOffset == null) {
       return;
     }
-    final int baseOffset = !extendSelection ? extentOffset : selection!.baseOffset;
+    final int baseOffset =
+        !extendSelection ? extentOffset : selection!.baseOffset;
     setSelection(
       TextSelection(baseOffset: baseOffset, extentOffset: extentOffset),
       SelectionChangedCause.keyboard,
@@ -1536,11 +1612,13 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   void _handleMoveCursorBackwardByCharacter(bool extendSelection) {
     assert(selection != null);
-    final int? extentOffset = _textPainter.getOffsetBefore(selection!.extentOffset);
+    final int? extentOffset =
+        _textPainter.getOffsetBefore(selection!.extentOffset);
     if (extentOffset == null) {
       return;
     }
-    final int baseOffset = !extendSelection ? extentOffset : selection!.baseOffset;
+    final int baseOffset =
+        !extendSelection ? extentOffset : selection!.baseOffset;
     setSelection(
       TextSelection(baseOffset: baseOffset, extentOffset: extentOffset),
       SelectionChangedCause.keyboard,
@@ -1549,12 +1627,14 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   void _handleMoveCursorForwardByWord(bool extendSelection) {
     assert(selection != null);
-    final TextRange currentWord = _textPainter.getWordBoundary(selection!.extent);
+    final TextRange currentWord =
+        _textPainter.getWordBoundary(selection!.extent);
     final TextRange? nextWord = _getNextWord(currentWord.end);
     if (nextWord == null) {
       return;
     }
-    final int baseOffset = extendSelection ? selection!.baseOffset : nextWord.start;
+    final int baseOffset =
+        extendSelection ? selection!.baseOffset : nextWord.start;
     setSelection(
       TextSelection(
         baseOffset: baseOffset,
@@ -1566,12 +1646,14 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   void _handleMoveCursorBackwardByWord(bool extendSelection) {
     assert(selection != null);
-    final TextRange currentWord = _textPainter.getWordBoundary(selection!.extent);
+    final TextRange currentWord =
+        _textPainter.getWordBoundary(selection!.extent);
     final TextRange? previousWord = _getPreviousWord(currentWord.start - 1);
     if (previousWord == null) {
       return;
     }
-    final int baseOffset = extendSelection ?  selection!.baseOffset : previousWord.start;
+    final int baseOffset =
+        extendSelection ? selection!.baseOffset : previousWord.start;
     setSelection(
       TextSelection(
         baseOffset: baseOffset,
@@ -1583,7 +1665,8 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   TextRange? _getNextWord(int offset) {
     while (true) {
-      final TextRange range = _textPainter.getWordBoundary(TextPosition(offset: offset));
+      final TextRange range =
+          _textPainter.getWordBoundary(TextPosition(offset: offset));
       if (range == null || !range.isValid || range.isCollapsed) {
         return null;
       }
@@ -1596,7 +1679,8 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   TextRange? _getPreviousWord(int offset) {
     while (offset >= 0) {
-      final TextRange range = _textPainter.getWordBoundary(TextPosition(offset: offset));
+      final TextRange range =
+          _textPainter.getWordBoundary(TextPosition(offset: offset));
       if (range == null || !range.isValid || range.isCollapsed) {
         return null;
       }
@@ -1712,7 +1796,8 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   // We need to check the paint offset here because during animation, the start of
   // the text may position outside the visible region even when the text fits.
-  bool get _hasVisualOverflow => _maxScrollExtent > 0 || paintOffset != Offset.zero;
+  bool get _hasVisualOverflow =>
+      _maxScrollExtent > 0 || paintOffset != Offset.zero;
 
   /// Returns the local coordinates of the endpoints of the given selection.
   ///
@@ -1731,16 +1816,27 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     computeTextMetricsIfNeeded();
     final Offset paintOffset1 = paintOffset;
 
-    final List<ui.TextBox> boxes = selection.isCollapsed ?
-        <ui.TextBox>[] : _textPainter.getBoxesForSelection(selection, boxHeightStyle: selectionHeightStyle, boxWidthStyle: selectionWidthStyle);
+    final List<ui.TextBox> boxes = selection.isCollapsed
+        ? <ui.TextBox>[]
+        : _textPainter.getBoxesForSelection(selection,
+            boxHeightStyle: selectionHeightStyle,
+            boxWidthStyle: selectionWidthStyle);
     if (boxes.isEmpty) {
       // TODO(mpcomplete): This doesn't work well at an RTL/LTR boundary.
-      final Offset caretOffset = _textPainter.getOffsetForCaret(selection.extent, _caretPrototype);
-      final Offset start = Offset(0.0, preferredLineHeight) + caretOffset + paintOffset1;
+      final Offset caretOffset =
+          _textPainter.getOffsetForCaret(selection.extent, _caretPrototype);
+      final Offset start =
+          Offset(0.0, preferredLineHeight) + caretOffset + paintOffset1;
       return <TextSelectionPoint>[TextSelectionPoint(start, null)];
     } else {
-      final Offset start = Offset(clampDouble(boxes.first.start, 0, _textPainter.size.width), boxes.first.bottom) + paintOffset1;
-      final Offset end = Offset(clampDouble(boxes.last.end, 0, _textPainter.size.width), boxes.last.bottom) + paintOffset1;
+      final Offset start = Offset(
+              clampDouble(boxes.first.start, 0, _textPainter.size.width),
+              boxes.first.bottom) +
+          paintOffset1;
+      final Offset end = Offset(
+              clampDouble(boxes.last.end, 0, _textPainter.size.width),
+              boxes.last.bottom) +
+          paintOffset1;
       return <TextSelectionPoint>[
         TextSelectionPoint(start, boxes.first.direction),
         TextSelectionPoint(end, boxes.last.direction),
@@ -1769,10 +1865,13 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       boxWidthStyle: selectionWidthStyle,
     );
 
-    return boxes.fold(
-      null,
-      (Rect? accum, TextBox incoming) => accum?.expandToInclude(incoming.toRect()) ?? incoming.toRect(),
-    )?.shift(paintOffset);
+    return boxes
+        .fold(
+          null,
+          (Rect? accum, TextBox incoming) =>
+              accum?.expandToInclude(incoming.toRect()) ?? incoming.toRect(),
+        )
+        ?.shift(paintOffset);
   }
 
   /// Returns the position in the text for the given global coordinate.
@@ -1813,7 +1912,8 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     );
 
     // This rect is the same as _caretPrototype but without the vertical padding.
-    final Rect rect = Rect.fromLTWH(0.0, 0.0, cursorWidth, cursorHeight).shift(caretOffset + paintOffset + cursorOffset);
+    final Rect rect = Rect.fromLTWH(0.0, 0.0, cursorWidth, cursorHeight)
+        .shift(caretOffset + paintOffset + cursorOffset);
     // Add additional cursor offset (generally only if on iOS).
     return rect.shift(_snapToPhysicalPixel(rect.topLeft));
   }
@@ -1836,6 +1936,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   double get preferredLineHeight => _textPainter.preferredLineHeight;
 
   int? _cachedLineBreakCount;
+
   // TODO(LongCatIsLooong): see if we can let ui.Paragraph estimate the number
   // of lines
   int _countHardLineBreaks(String text) {
@@ -1858,7 +1959,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     return _cachedLineBreakCount = count;
   }
 
-double _preferredHeight(double width) {
+  double _preferredHeight(double width) {
     final int? maxLines = this.maxLines;
     final int? minLines = this.minLines ?? maxLines;
     final double minHeight = preferredLineHeight * (minLines ?? 0);
@@ -1866,7 +1967,8 @@ double _preferredHeight(double width) {
     if (maxLines == null) {
       final double estimatedHeight;
       if (width == double.infinity) {
-        estimatedHeight = preferredLineHeight * (_countHardLineBreaks(plainText) + 1);
+        estimatedHeight =
+            preferredLineHeight * (_countHardLineBreaks(plainText) + 1);
       } else {
         layoutText(maxWidth: width);
         estimatedHeight = _textPainter.height;
@@ -1879,11 +1981,13 @@ double _preferredHeight(double width) {
     // Use preferredLineHeight since SkParagraph currently returns an incorrect
     // height.
     final TextHeightBehavior? textHeightBehavior = this.textHeightBehavior;
-    final bool usePreferredLineHeightHack = maxLines == 1
-        && text?.codeUnitAt(0) == null
-        && strutStyle != null && strutStyle != StrutStyle.disabled
-        && textHeightBehavior != null
-        && (!textHeightBehavior.applyHeightToFirstAscent || !textHeightBehavior.applyHeightToLastDescent);
+    final bool usePreferredLineHeightHack = maxLines == 1 &&
+        text?.codeUnitAt(0) == null &&
+        strutStyle != null &&
+        strutStyle != StrutStyle.disabled &&
+        textHeightBehavior != null &&
+        (!textHeightBehavior.applyHeightToFirstAscent ||
+            !textHeightBehavior.applyHeightToLastDescent);
 
     // Special case maxLines == 1 since it forces the scrollable direction
     // to be horizontal. Report the real height to prevent the text from being
@@ -1925,14 +2029,15 @@ double _preferredHeight(double width) {
 
   @override
   @protected
-  bool hitTestChildren(BoxHitTestResult result, { required Offset position }) {
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
     // Hit test text spans.
     bool hitText = false;
 
     final InlineSpan? textSpan = _textPainter.text;
     if (textSpan != null) {
       final Offset effectivePosition = position - paintOffset;
-      final TextPosition textPosition = _textPainter.getPositionForOffset(effectivePosition);
+      final TextPosition textPosition =
+          _textPainter.getPositionForOffset(effectivePosition);
       final Object? span = textSpan.getSpanForPosition(textPosition);
       if (span is HitTestTarget) {
         result.add(HitTestEntry(span));
@@ -1942,25 +2047,29 @@ double _preferredHeight(double width) {
     // Hit test render object children
     RenderBox? child = firstChild;
     int childIndex = 0;
-    while (child != null && childIndex < _textPainter.inlinePlaceholderBoxes!.length) {
+    while (child != null &&
+        childIndex < _textPainter.inlinePlaceholderBoxes!.length) {
       final TextParentData textParentData = child.parentData! as TextParentData;
       final Matrix4 transform = Matrix4.translationValues(
         textParentData.offset.dx,
         textParentData.offset.dy,
         0.0,
       )..scale(
-        textParentData.scale,
-        textParentData.scale,
-        textParentData.scale,
-      );
+          textParentData.scale,
+          textParentData.scale,
+          textParentData.scale,
+        );
       final bool isHit = result.addWithPaintTransform(
         transform: transform,
         position: position,
         hitTest: (BoxHitTestResult result, Offset transformed) {
           assert(() {
-            final Offset manualPosition = (position - textParentData.offset) / textParentData.scale!;
-            return (transformed.dx - manualPosition.dx).abs() < precisionErrorTolerance
-              && (transformed.dy - manualPosition.dy).abs() < precisionErrorTolerance;
+            final Offset manualPosition =
+                (position - textParentData.offset) / textParentData.scale!;
+            return (transformed.dx - manualPosition.dx).abs() <
+                    precisionErrorTolerance &&
+                (transformed.dy - manualPosition.dy).abs() <
+                    precisionErrorTolerance;
           }());
           return child!.hitTest(result, position: transformed);
         },
@@ -2021,6 +2130,7 @@ double _preferredHeight(double width) {
   void handleTapDown(TapDownDetails details) {
     _lastTapDownPosition = details.globalPosition;
   }
+
   void _handleTapDown(TapDownDetails details) {
     assert(!ignorePointer);
     handleTapDown(details);
@@ -2036,6 +2146,7 @@ double _preferredHeight(double width) {
   void handleTap() {
     selectPosition(cause: SelectionChangedCause.tap);
   }
+
   void _handleTap() {
     assert(!ignorePointer);
     handleTap();
@@ -2061,6 +2172,7 @@ double _preferredHeight(double width) {
   void handleLongPress() {
     selectWord(cause: SelectionChangedCause.longPress);
   }
+
   void _handleLongPress() {
     assert(!ignorePointer);
     handleLongPress();
@@ -2077,7 +2189,7 @@ double _preferredHeight(double width) {
   /// programmatically manipulate its `value` or `selection` directly.
   /// {@endtemplate}
   @override
-  void selectPosition({ required SelectionChangedCause cause }) {
+  void selectPosition({required SelectionChangedCause cause}) {
     selectPositionAt(from: _lastTapDownPosition!, cause: cause);
   }
 
@@ -2086,21 +2198,56 @@ double _preferredHeight(double width) {
   /// [from] corresponds to the [TextSelection.baseOffset], and [to] corresponds
   /// to the [TextSelection.extentOffset].
   @override
-  void selectPositionAt({ required Offset from, Offset? to, required SelectionChangedCause cause }) {
+  void selectPositionAt(
+      {required Offset from,
+      Offset? to,
+      required SelectionChangedCause cause}) {
     assert(cause != null);
     assert(from != null);
     _layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
-    final TextPosition fromPosition = _textPainter.getPositionForOffset(globalToLocal(from - paintOffset));
+    final TextPosition fromPosition =
+        _textPainter.getPositionForOffset(globalToLocal(from - paintOffset));
     final TextPosition? toPosition = to == null
-      ? null
-      : _textPainter.getPositionForOffset(globalToLocal(to - paintOffset));
+        ? null
+        : _textPainter.getPositionForOffset(globalToLocal(to - paintOffset));
+
 
     final int baseOffset = fromPosition.offset;
     final int extentOffset = toPosition?.offset ?? fromPosition.offset;
+    ///hyx 适配
+    int offset = baseOffset;
+    int toOffset = extentOffset;
+    text!.visitChildren((InlineSpan ts) {
+      if (ts is SpecialInlineSpanBase) {
+        final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
+        final int length = specialTs.actualText.length;
+        if (specialTs.start < offset) {
+          offset += length - 1;
+          return true;
+        } else {
+          return false;
+        }
+      }
+      return true;
+    });
+    text!.visitChildren((InlineSpan ts) {
+      if (ts is SpecialInlineSpanBase) {
+        final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
+        final int length = specialTs.actualText.length;
+        if (specialTs.start < toOffset) {
+          toOffset += length - 1;
+          return true;
+        } else {
+          return false;
+        }
+      }
+      return true;
+    });
+
 
     final TextSelection newSelection = TextSelection(
-      baseOffset: baseOffset,
-      extentOffset: extentOffset,
+      baseOffset: offset,
+      extentOffset: toOffset,
       affinity: fromPosition.affinity,
     );
 
@@ -2111,7 +2258,7 @@ double _preferredHeight(double width) {
   ///
   /// {@macro flutter.rendering.RenderEditable.selectPosition}
   @override
-  void selectWord({ required SelectionChangedCause cause }) {
+  void selectWord({required SelectionChangedCause cause}) {
     selectWordsInRange(from: _lastTapDownPosition!, cause: cause);
   }
 
@@ -2124,20 +2271,30 @@ double _preferredHeight(double width) {
   ///
   /// {@macro flutter.rendering.RenderEditable.selectPosition}
   @override
-  void selectWordsInRange({ required Offset from, Offset? to, required SelectionChangedCause cause }) {
+  void selectWordsInRange(
+      {required Offset from,
+      Offset? to,
+      required SelectionChangedCause cause}) {
     assert(cause != null);
     assert(from != null);
     _computeTextMetricsIfNeeded();
-    final TextPosition fromPosition = _textPainter.getPositionForOffset(globalToLocal(from - paintOffset));
+    final TextPosition fromPosition =
+        _textPainter.getPositionForOffset(globalToLocal(from - paintOffset));
     final TextSelection fromWord = _getWordAtOffset(fromPosition);
-    final TextPosition toPosition = to == null ? fromPosition : _textPainter.getPositionForOffset(globalToLocal(to - paintOffset));
-    final TextSelection toWord = toPosition == fromPosition ? fromWord : _getWordAtOffset(toPosition);
+    final TextPosition toPosition = to == null
+        ? fromPosition
+        : _textPainter.getPositionForOffset(globalToLocal(to - paintOffset));
+    final TextSelection toWord =
+        toPosition == fromPosition ? fromWord : _getWordAtOffset(toPosition);
     final bool isFromWordBeforeToWord = fromWord.start < toWord.end;
 
     _setSelection(
       TextSelection(
-        baseOffset: isFromWordBeforeToWord ? fromWord.base.offset : fromWord.extent.offset,
-        extentOffset: isFromWordBeforeToWord ? toWord.extent.offset : toWord.base.offset,
+        baseOffset: isFromWordBeforeToWord
+            ? fromWord.base.offset
+            : fromWord.extent.offset,
+        extentOffset:
+            isFromWordBeforeToWord ? toWord.extent.offset : toWord.base.offset,
         affinity: fromWord.affinity,
       ),
       cause,
@@ -2148,17 +2305,19 @@ double _preferredHeight(double width) {
   ///
   /// {@macro flutter.rendering.RenderEditable.selectPosition}
   @override
-  void selectWordEdge({ required SelectionChangedCause cause }) {
+  void selectWordEdge({required SelectionChangedCause cause}) {
     assert(cause != null);
     _computeTextMetricsIfNeeded();
     assert(_lastTapDownPosition != null);
-    final TextPosition position = _textPainter.getPositionForOffset(globalToLocal(_lastTapDownPosition! - paintOffset));
+    final TextPosition position = _textPainter.getPositionForOffset(
+        globalToLocal(_lastTapDownPosition! - paintOffset));
     final TextRange word = _textPainter.getWordBoundary(position);
     late TextSelection newSelection;
     if (position.offset <= word.start) {
       newSelection = TextSelection.collapsed(offset: word.start);
     } else {
-      newSelection = TextSelection.collapsed(offset: word.end, affinity: TextAffinity.upstream);
+      newSelection = TextSelection.collapsed(
+          offset: word.end, affinity: TextAffinity.upstream);
     }
     _setSelection(newSelection, cause);
   }
@@ -2167,9 +2326,8 @@ double _preferredHeight(double width) {
     debugAssertLayoutUpToDate();
     // When long-pressing past the end of the text, we want a collapsed cursor.
     if (position.offset >= plainText.length) {
-      return TextSelection.fromPosition(
-        TextPosition(offset: plainText.length, affinity: TextAffinity.upstream)
-      );
+      return TextSelection.fromPosition(TextPosition(
+          offset: plainText.length, affinity: TextAffinity.upstream));
     }
     // If text is obscured, the entire sentence should be treated as one word.
     if (obscureText) {
@@ -2194,8 +2352,8 @@ double _preferredHeight(double width) {
     // If the platform is Android and the text is read only, try to select the
     // previous word if there is one; otherwise, select the single whitespace at
     // the position.
-    if (TextLayoutMetrics.isWhitespace(plainText.codeUnitAt(effectiveOffset))
-        && effectiveOffset > 0) {
+    if (TextLayoutMetrics.isWhitespace(plainText.codeUnitAt(effectiveOffset)) &&
+        effectiveOffset > 0) {
       assert(defaultTargetPlatform != null);
       final TextRange? previousWord = _getPreviousWord(word.start);
       switch (defaultTargetPlatform) {
@@ -2250,17 +2408,21 @@ double _preferredHeight(double width) {
   // children to _textPainter so that appropriate placeholders can be inserted
   // into the LibTxt layout. This does not do anything if no inline widgets were
   // specified.
-  List<PlaceholderDimensions> _layoutChildren(BoxConstraints constraints, {bool dry = false}) {
+  List<PlaceholderDimensions> _layoutChildren(BoxConstraints constraints,
+      {bool dry = false}) {
     if (childCount == 0) {
       _textPainter.setPlaceholderDimensions(<PlaceholderDimensions>[]);
       return <PlaceholderDimensions>[];
     }
     RenderBox? child = firstChild;
-    final List<PlaceholderDimensions> placeholderDimensions = List<PlaceholderDimensions>.filled(childCount, PlaceholderDimensions.empty);
+    final List<PlaceholderDimensions> placeholderDimensions =
+        List<PlaceholderDimensions>.filled(
+            childCount, PlaceholderDimensions.empty);
     int childIndex = 0;
     // Only constrain the width to the maximum width of the paragraph.
     // Leave height unconstrained, which will overflow if expanded past.
-    BoxConstraints boxConstraints = BoxConstraints(maxWidth: constraints.maxWidth);
+    BoxConstraints boxConstraints =
+        BoxConstraints(maxWidth: constraints.maxWidth);
     // The content will be enlarged by textScaleFactor during painting phase.
     // We reduce constraints by textScaleFactor, so that the content will fit
     // into the box once it is enlarged.
@@ -2289,7 +2451,8 @@ double _preferredHeight(double width) {
             break;
         }
       } else {
-        assert(placeholderSpans[childIndex].alignment != ui.PlaceholderAlignment.baseline);
+        assert(placeholderSpans[childIndex].alignment !=
+            ui.PlaceholderAlignment.baseline);
         childSize = child.getDryLayout(boxConstraints);
       }
       placeholderDimensions[childIndex] = PlaceholderDimensions(
@@ -2307,7 +2470,8 @@ double _preferredHeight(double width) {
   void _setParentData() {
     RenderBox? child = firstChild;
     int childIndex = 0;
-    while (child != null && childIndex < _textPainter.inlinePlaceholderBoxes!.length) {
+    while (child != null &&
+        childIndex < _textPainter.inlinePlaceholderBoxes!.length) {
       final TextParentData textParentData = child.parentData! as TextParentData;
       textParentData.offset = Offset(
         _textPainter.inlinePlaceholderBoxes![childIndex].left,
@@ -2319,15 +2483,17 @@ double _preferredHeight(double width) {
     }
   }
 
-  void _layoutText({ double minWidth = 0.0, double maxWidth = double.infinity }) {
+  void _layoutText({double minWidth = 0.0, double maxWidth = double.infinity}) {
     assert(maxWidth != null && minWidth != null);
     final double availableMaxWidth = math.max(0.0, maxWidth - _caretMargin);
     final double availableMinWidth = math.min(minWidth, availableMaxWidth);
-    final double textMaxWidth = _isMultiline ? availableMaxWidth : double.infinity;
-    final double textMinWidth = forceLine ? availableMaxWidth : availableMinWidth;
+    final double textMaxWidth =
+        _isMultiline ? availableMaxWidth : double.infinity;
+    final double textMinWidth =
+        forceLine ? availableMaxWidth : availableMinWidth;
     _textPainter.layout(
-        minWidth: textMinWidth,
-        maxWidth: textMaxWidth,
+      minWidth: textMinWidth,
+      maxWidth: textMaxWidth,
     );
     _textLayoutLastMinWidth = minWidth;
     _textLayoutLastMaxWidth = maxWidth;
@@ -2375,13 +2541,15 @@ double _preferredHeight(double width) {
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
-        _caretPrototype = Rect.fromLTWH(0.0, 0.0, cursorWidth, cursorHeight + 2);
+        _caretPrototype =
+            Rect.fromLTWH(0.0, 0.0, cursorWidth, cursorHeight + 2);
         break;
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
-        _caretPrototype = Rect.fromLTWH(0.0, _kCaretHeightOffset, cursorWidth, cursorHeight - 2.0 * _kCaretHeightOffset);
+        _caretPrototype = Rect.fromLTWH(0.0, _kCaretHeightOffset, cursorWidth,
+            cursorHeight - 2.0 * _kCaretHeightOffset);
         break;
     }
   }
@@ -2393,12 +2561,14 @@ double _preferredHeight(double width) {
     final double pixelMultiple = 1.0 / _devicePixelRatio;
     return Offset(
       globalOffset.dx.isFinite
-        ? (globalOffset.dx / pixelMultiple).round() * pixelMultiple - globalOffset.dx
-        : 0,
+          ? (globalOffset.dx / pixelMultiple).round() * pixelMultiple -
+              globalOffset.dx
+          : 0,
       globalOffset.dy.isFinite
-        ? (globalOffset.dy / pixelMultiple).round() * pixelMultiple - globalOffset.dy
-        : 0,
-      );
+          ? (globalOffset.dy / pixelMultiple).round() * pixelMultiple -
+              globalOffset.dy
+          : 0,
+    );
   }
 
   bool _canComputeDryLayout() {
@@ -2424,15 +2594,19 @@ double _preferredHeight(double width) {
   Size computeDryLayout(BoxConstraints constraints) {
     if (!_canComputeDryLayout()) {
       assert(debugCannotComputeDryLayout(
-        reason: 'Dry layout not available for alignments that require baseline.',
+        reason:
+            'Dry layout not available for alignments that require baseline.',
       ));
       return Size.zero;
     }
-    _textPainter.setPlaceholderDimensions(_layoutChildren(constraints, dry: true));
+    _textPainter
+        .setPlaceholderDimensions(_layoutChildren(constraints, dry: true));
     _layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
-    final double width = forceLine ? constraints.maxWidth : constraints
-        .constrainWidth(_textPainter.size.width + _caretMargin);
-    return Size(width, constraints.constrainHeight(_preferredHeight(constraints.maxWidth)));
+    final double width = forceLine
+        ? constraints.maxWidth
+        : constraints.constrainWidth(_textPainter.size.width + _caretMargin);
+    return Size(width,
+        constraints.constrainHeight(_preferredHeight(constraints.maxWidth)));
   }
 
   @override
@@ -2452,11 +2626,13 @@ double _preferredHeight(double width) {
     // though we currently don't use those here.
     // See also RenderParagraph which has a similar issue.
     final Size textPainterSize = _textPainter.size;
-    final double width = forceLine ? constraints.maxWidth : constraints
-        .constrainWidth(_textPainter.size.width + _caretMargin);
+    final double width = forceLine
+        ? constraints.maxWidth
+        : constraints.constrainWidth(_textPainter.size.width + _caretMargin);
     final double preferredHeight = _preferredHeight(constraints.maxWidth);
     size = Size(width, constraints.constrainHeight(preferredHeight));
-    final Size contentSize = Size(textPainterSize.width + _caretMargin, textPainterSize.height);
+    final Size contentSize =
+        Size(textPainterSize.width + _caretMargin, textPainterSize.height);
 
     final BoxConstraints painterConstraints = BoxConstraints.tight(contentSize);
 
@@ -2483,9 +2659,12 @@ double _preferredHeight(double width) {
   Offset calculateBoundedFloatingCursorOffset(Offset rawCursorOffset) {
     Offset deltaPosition = Offset.zero;
     final double topBound = -floatingCursorAddedMargin.top;
-    final double bottomBound = _textPainter.height - preferredLineHeight + floatingCursorAddedMargin.bottom;
+    final double bottomBound = _textPainter.height -
+        preferredLineHeight +
+        floatingCursorAddedMargin.bottom;
     final double leftBound = -floatingCursorAddedMargin.left;
-    final double rightBound = _textPainter.width + floatingCursorAddedMargin.right;
+    final double rightBound =
+        _textPainter.width + floatingCursorAddedMargin.right;
 
     if (_previousOffset != null) {
       deltaPosition = rawCursorOffset - _previousOffset!;
@@ -2494,24 +2673,30 @@ double _preferredHeight(double width) {
     // If the raw cursor offset has gone off an edge, we want to reset the relative
     // origin of the dragging when the user drags back into the field.
     if (_resetOriginOnLeft && deltaPosition.dx > 0) {
-      _relativeOrigin = Offset(rawCursorOffset.dx - leftBound, _relativeOrigin.dy);
+      _relativeOrigin =
+          Offset(rawCursorOffset.dx - leftBound, _relativeOrigin.dy);
       _resetOriginOnLeft = false;
     } else if (_resetOriginOnRight && deltaPosition.dx < 0) {
-      _relativeOrigin = Offset(rawCursorOffset.dx - rightBound, _relativeOrigin.dy);
+      _relativeOrigin =
+          Offset(rawCursorOffset.dx - rightBound, _relativeOrigin.dy);
       _resetOriginOnRight = false;
     }
     if (_resetOriginOnTop && deltaPosition.dy > 0) {
-      _relativeOrigin = Offset(_relativeOrigin.dx, rawCursorOffset.dy - topBound);
+      _relativeOrigin =
+          Offset(_relativeOrigin.dx, rawCursorOffset.dy - topBound);
       _resetOriginOnTop = false;
     } else if (_resetOriginOnBottom && deltaPosition.dy < 0) {
-      _relativeOrigin = Offset(_relativeOrigin.dx, rawCursorOffset.dy - bottomBound);
+      _relativeOrigin =
+          Offset(_relativeOrigin.dx, rawCursorOffset.dy - bottomBound);
       _resetOriginOnBottom = false;
     }
 
     final double currentX = rawCursorOffset.dx - _relativeOrigin.dx;
     final double currentY = rawCursorOffset.dy - _relativeOrigin.dy;
-    final double adjustedX = math.min(math.max(currentX, leftBound), rightBound);
-    final double adjustedY = math.min(math.max(currentY, topBound), bottomBound);
+    final double adjustedX =
+        math.min(math.max(currentX, leftBound), rightBound);
+    final double adjustedY =
+        math.min(math.max(currentY, topBound), bottomBound);
     final Offset adjustedOffset = Offset(adjustedX, adjustedY);
 
     if (currentX < leftBound && deltaPosition.dx < 0) {
@@ -2532,7 +2717,9 @@ double _preferredHeight(double width) {
 
   /// Sets the screen position of the floating cursor and the text position
   /// closest to the cursor.
-  void setFloatingCursor(FloatingCursorDragState state, Offset boundedOffset, TextPosition lastTextPosition, { double? resetLerpValue }) {
+  void setFloatingCursor(FloatingCursorDragState state, Offset boundedOffset,
+      TextPosition lastTextPosition,
+      {double? resetLerpValue}) {
     assert(state != null);
     assert(boundedOffset != null);
     assert(lastTextPosition != null);
@@ -2550,28 +2737,38 @@ double _preferredHeight(double width) {
       _floatingCursorTextPosition = lastTextPosition;
       final double? animationValue = _resetFloatingCursorAnimationValue;
       final EdgeInsets sizeAdjustment = animationValue != null
-        ? EdgeInsets.lerp(_kFloatingCaretSizeIncrease, EdgeInsets.zero, animationValue)!
-        : _kFloatingCaretSizeIncrease;
-      _caretPainter.floatingCursorRect = sizeAdjustment.inflateRect(_caretPrototype).shift(boundedOffset);
+          ? EdgeInsets.lerp(
+              _kFloatingCaretSizeIncrease, EdgeInsets.zero, animationValue)!
+          : _kFloatingCaretSizeIncrease;
+      _caretPainter.floatingCursorRect =
+          sizeAdjustment.inflateRect(_caretPrototype).shift(boundedOffset);
     } else {
       _caretPainter.floatingCursorRect = null;
     }
     _caretPainter.showRegularCaret = _resetFloatingCursorAnimationValue == null;
   }
 
-  MapEntry<int, Offset> _lineNumberFor(TextPosition startPosition, List<ui.LineMetrics> metrics) {
+  MapEntry<int, Offset> _lineNumberFor(
+      TextPosition startPosition, List<ui.LineMetrics> metrics) {
     // TODO(LongCatIsLooong): include line boundaries information in
     // ui.LineMetrics, then we can get rid of this.
-    final Offset offset = _textPainter.getOffsetForCaret(startPosition, Rect.zero);
+    final Offset offset =
+        _textPainter.getOffsetForCaret(startPosition, Rect.zero);
     for (final ui.LineMetrics lineMetrics in metrics) {
       if (lineMetrics.baseline > offset.dy) {
-        return MapEntry<int, Offset>(lineMetrics.lineNumber, Offset(offset.dx, lineMetrics.baseline));
+        return MapEntry<int, Offset>(
+            lineMetrics.lineNumber, Offset(offset.dx, lineMetrics.baseline));
       }
     }
-    assert(startPosition.offset == 0, 'unable to find the line for $startPosition');
+    assert(startPosition.offset == 0,
+        'unable to find the line for $startPosition');
     return MapEntry<int, Offset>(
       math.max(0, metrics.length - 1),
-      Offset(offset.dx, metrics.isNotEmpty ? metrics.last.baseline + metrics.last.descent : 0.0),
+      Offset(
+          offset.dx,
+          metrics.isNotEmpty
+              ? metrics.last.baseline + metrics.last.descent
+              : 0.0),
     );
   }
 
@@ -2589,9 +2786,11 @@ double _preferredHeight(double width) {
   /// The caller should typically discard a [VerticalCaretMovementRun] when
   /// its [VerticalCaretMovementRun.isValid] becomes false, or on other
   /// occasions where the vertical caret run should be interrupted.
-  VerticalCaretMovementRun startVerticalCaretMovement(TextPosition startPosition) {
+  VerticalCaretMovementRun startVerticalCaretMovement(
+      TextPosition startPosition) {
     final List<ui.LineMetrics> metrics = _textPainter.computeLineMetrics();
-    final MapEntry<int, Offset> currentLine = _lineNumberFor(startPosition, metrics);
+    final MapEntry<int, Offset> currentLine =
+        _lineNumberFor(startPosition, metrics);
     return VerticalCaretMovementRun._(
       this,
       metrics,
@@ -2649,9 +2848,11 @@ double _preferredHeight(double width) {
   }
 
   Offset? _initialOffset;
+
   Offset get _effectiveOffset => (_initialOffset ?? Offset.zero) + paintOffset;
 
-  void _paintHandleLayers(PaintingContext context, List<TextSelectionPoint> endpoints, Offset offset) {
+  void _paintHandleLayers(PaintingContext context,
+      List<TextSelectionPoint> endpoints, Offset offset) {
     Offset startPoint = endpoints[0].point;
     startPoint = Offset(
       clampDouble(startPoint.dx, 0.0, size.width),
@@ -2701,7 +2902,8 @@ double _preferredHeight(double width) {
     }
   }
 
-  final LayerHandle<ClipRectLayer> _clipRectLayer = LayerHandle<ClipRectLayer>();
+  final LayerHandle<ClipRectLayer> _clipRectLayer =
+      LayerHandle<ClipRectLayer>();
 
   void _paintSpecialText(PaintingContext context, Offset offset) {
     if (!hasSpecialInlineSpanBase) {
@@ -2799,13 +3001,16 @@ double _preferredHeight(double width) {
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties.add(ColorProperty('cursorColor', cursorColor));
-    properties.add(DiagnosticsProperty<ValueNotifier<bool>>('showCursor', showCursor));
+    properties.add(
+        DiagnosticsProperty<ValueNotifier<bool>>('showCursor', showCursor));
     properties.add(IntProperty('maxLines', maxLines));
     properties.add(IntProperty('minLines', minLines));
-    properties.add(DiagnosticsProperty<bool>('expands', expands, defaultValue: false));
+    properties.add(
+        DiagnosticsProperty<bool>('expands', expands, defaultValue: false));
     properties.add(ColorProperty('selectionColor', selectionColor));
     properties.add(DoubleProperty('textScaleFactor', textScaleFactor));
-    properties.add(DiagnosticsProperty<Locale>('locale', locale, defaultValue: null));
+    properties
+        .add(DiagnosticsProperty<Locale>('locale', locale, defaultValue: null));
     properties.add(DiagnosticsProperty<TextSelection>('selection', selection));
     properties.add(DiagnosticsProperty<ViewportOffset>('offset', offset));
   }
@@ -2855,7 +3060,8 @@ double _preferredHeight(double width) {
 class _RenderEditableCustomPaint extends RenderBox {
   _RenderEditableCustomPaint({
     ExtendedRenderEditablePainter? painter,
-  }) : _painter = painter, super();
+  })  : _painter = painter,
+        super();
 
   @override
   ExtendedRenderEditable? get parent => super.parent as ExtendedRenderEditable?;
@@ -2868,6 +3074,7 @@ class _RenderEditableCustomPaint extends RenderBox {
 
   ExtendedRenderEditablePainter? get painter => _painter;
   ExtendedRenderEditablePainter? _painter;
+
   set painter(ExtendedRenderEditablePainter? newValue) {
     if (newValue == painter) {
       return;
@@ -2918,6 +3125,7 @@ class _FloatingCursorPainter extends ExtendedRenderEditablePainter {
 
   bool get shouldPaint => _shouldPaint;
   bool _shouldPaint = true;
+
   set shouldPaint(bool value) {
     if (shouldPaint == value) {
       return;
@@ -2936,6 +3144,7 @@ class _FloatingCursorPainter extends ExtendedRenderEditablePainter {
 
   Color? get caretColor => _caretColor;
   Color? _caretColor;
+
   set caretColor(Color? value) {
     if (caretColor?.value == value?.value) {
       return;
@@ -2947,6 +3156,7 @@ class _FloatingCursorPainter extends ExtendedRenderEditablePainter {
 
   Radius? get cursorRadius => _cursorRadius;
   Radius? _cursorRadius;
+
   set cursorRadius(Radius? value) {
     if (_cursorRadius == value) {
       return;
@@ -2957,6 +3167,7 @@ class _FloatingCursorPainter extends ExtendedRenderEditablePainter {
 
   Offset get cursorOffset => _cursorOffset;
   Offset _cursorOffset = Offset.zero;
+
   set cursorOffset(Offset value) {
     if (_cursorOffset == value) {
       return;
@@ -2967,6 +3178,7 @@ class _FloatingCursorPainter extends ExtendedRenderEditablePainter {
 
   Color? get backgroundCursorColor => _backgroundCursorColor;
   Color? _backgroundCursorColor;
+
   set backgroundCursorColor(Color? value) {
     if (backgroundCursorColor?.value == value?.value) {
       return;
@@ -2980,6 +3192,7 @@ class _FloatingCursorPainter extends ExtendedRenderEditablePainter {
 
   Rect? get floatingCursorRect => _floatingCursorRect;
   Rect? _floatingCursorRect;
+
   set floatingCursorRect(Rect? value) {
     if (_floatingCursorRect == value) {
       return;
@@ -3080,7 +3293,9 @@ class _FloatingCursorPainter extends ExtendedRenderEditablePainter {
 
     final Color? caretColor = floatingCursorRect == null
         ? this.caretColor
-        : showRegularCaret ? backgroundCursorColor : null;
+        : showRegularCaret
+            ? backgroundCursorColor
+            : null;
     final TextPosition caretTextPosition = floatingCursorRect == null
         ? selection.extent
         : renderEditable._floatingCursorTextPosition;
@@ -3091,7 +3306,9 @@ class _FloatingCursorPainter extends ExtendedRenderEditablePainter {
 
     final Color? floatingCursorColor = this.caretColor?.withOpacity(0.75);
     // Floating Cursor.
-    if (floatingCursorRect == null || floatingCursorColor == null || !shouldPaint) {
+    if (floatingCursorRect == null ||
+        floatingCursorColor == null ||
+        !shouldPaint) {
       return;
     }
 
@@ -3112,19 +3329,19 @@ class _FloatingCursorPainter extends ExtendedRenderEditablePainter {
     if (oldDelegate == null) {
       return shouldPaint;
     }
-    return oldDelegate is! _FloatingCursorPainter
-        || oldDelegate.shouldPaint != shouldPaint
-        || oldDelegate.showRegularCaret != showRegularCaret
-        || oldDelegate.caretColor != caretColor
-        || oldDelegate.cursorRadius != cursorRadius
-        || oldDelegate.cursorOffset != cursorOffset
-        || oldDelegate.backgroundCursorColor != backgroundCursorColor
-        || oldDelegate.floatingCursorRect != floatingCursorRect;
+    return oldDelegate is! _FloatingCursorPainter ||
+        oldDelegate.shouldPaint != shouldPaint ||
+        oldDelegate.showRegularCaret != showRegularCaret ||
+        oldDelegate.caretColor != caretColor ||
+        oldDelegate.cursorRadius != cursorRadius ||
+        oldDelegate.cursorOffset != cursorOffset ||
+        oldDelegate.backgroundCursorColor != backgroundCursorColor ||
+        oldDelegate.floatingCursorRect != floatingCursorRect;
   }
 }
 
 class _CompositeRenderEditablePainter extends ExtendedRenderEditablePainter {
-  _CompositeRenderEditablePainter({required this.painters });
+  _CompositeRenderEditablePainter({required this.painters});
 
   final List<ExtendedRenderEditablePainter> painters;
 
@@ -3154,12 +3371,15 @@ class _CompositeRenderEditablePainter extends ExtendedRenderEditablePainter {
     if (identical(oldDelegate, this)) {
       return false;
     }
-    if (oldDelegate is! _CompositeRenderEditablePainter || oldDelegate.painters.length != painters.length) {
+    if (oldDelegate is! _CompositeRenderEditablePainter ||
+        oldDelegate.painters.length != painters.length) {
       return true;
     }
 
-    final Iterator<ExtendedRenderEditablePainter> oldPainters = oldDelegate.painters.iterator;
-    final Iterator<ExtendedRenderEditablePainter> newPainters = painters.iterator;
+    final Iterator<ExtendedRenderEditablePainter> oldPainters =
+        oldDelegate.painters.iterator;
+    final Iterator<ExtendedRenderEditablePainter> newPainters =
+        painters.iterator;
     while (oldPainters.moveNext() && newPainters.moveNext()) {
       if (newPainters.current.shouldRepaint(oldPainters.current)) {
         return true;
