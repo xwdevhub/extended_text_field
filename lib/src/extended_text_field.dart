@@ -256,7 +256,6 @@ class ExtendedTextField extends StatefulWidget {
     this.contextMenuBuilder,
     this.spellCheckConfiguration,
     this.magnifierConfiguration,
-    this.shouldShowSelectionHandles,
     this.textSelectionGestureDetectorBuilder,
     this.pasteTextIntercept,
     this.offsetFunction,
@@ -340,7 +339,7 @@ class ExtendedTextField extends StatefulWidget {
   /// Whether should show selection handles
   /// handles are not shown in desktop or web as default
   /// you can define your behavior
-  final ShouldShowSelectionHandlesCallback? shouldShowSelectionHandles;
+
 
   /// build your ccustom text span
   final SpecialTextSpanBuilder? specialTextSpanBuilder;
@@ -967,7 +966,7 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
         },
         onTap: _dealTapAction,
         context: context,
-        requestKeyboard: _requestKeyboard,
+        requestKeyboard: requestKeyboard,
       );
     } else {
       _selectionGestureDetectorBuilder =
@@ -984,7 +983,7 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
         },
         onTap: _dealTapAction,
         context: context,
-        requestKeyboard: _requestKeyboard,
+        requestKeyboard: requestKeyboard,
       );
     }
   }
@@ -1084,18 +1083,11 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
 
   ExtendedEditableTextState? get _editableText => editableTextKey.currentState;
 
-  void _requestKeyboard() {
+  void requestKeyboard() {
     _editableText?.requestKeyboard();
   }
 
   bool _shouldShowSelectionHandles(SelectionChangedCause? cause) {
-    if (widget.shouldShowSelectionHandles != null) {
-      return widget.shouldShowSelectionHandles!(
-        cause,
-        _selectionGestureDetectorBuilder,
-        _editableText!.textEditingValue,
-      );
-    }
     // When the text field is activated by something that doesn't trigger the
     // selection overlay, we shouldn't show the handles either.
     if (!_selectionGestureDetectorBuilder.shouldShowSelectionToolbar) {
@@ -1473,7 +1465,7 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
                   if (!_effectiveController.selection.isValid) {
                     _effectiveController.selection = TextSelection.collapsed(offset: _effectiveController.text.length);
                   }
-                  _requestKeyboard();
+                  requestKeyboard();
                 },
                 onDidGainAccessibilityFocus: handleDidGainAccessibilityFocus,
                 child: child,
