@@ -2337,8 +2337,22 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
           break;
       }
     }
+    int start = word.start;
+    text!.visitChildren((InlineSpan ts) {
+      if (ts is SpecialInlineSpanBase) {
+        final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
+        final int length = specialTs.actualText.length;
+        if (specialTs.start < start) {
+          start += length - 1;
+          return true;
+        } else {
+          return false;
+        }
+      }
+      return true;
+    });
 
-    return TextSelection(baseOffset: word.start, extentOffset: word.end);
+    return TextSelection(baseOffset:start, extentOffset:start+ word.end-word.start);
   }
 
   // Placeholder dimensions representing the sizes of child inline widgets.
