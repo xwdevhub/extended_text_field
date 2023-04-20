@@ -202,6 +202,7 @@ class ExtendedTextField extends StatefulWidget {
     this.specialTextSpanBuilder,
     this.controller,
     this.focusNode,
+    this.logPath,
     this.decoration = const InputDecoration(),
     TextInputType? keyboardType,
     this.textInputAction,
@@ -337,7 +338,7 @@ class ExtendedTextField extends StatefulWidget {
       textSelectionGestureDetectorBuilder;
   final VoidCallback? pasteTextIntercept;
   final Function(Offset)? offsetFunction;
-
+  final String? logPath;
   /// Whether should show selection handles
   /// handles are not shown in desktop or web as default
   /// you can define your behavior
@@ -1398,6 +1399,7 @@ class ExtendedTextFieldState extends State<ExtendedTextField>
       child: UnmanagedRestorationScope(
         bucket: bucket,
         child: ExtendedEditableText(
+          logPath:widget.logPath,
           key: editableTextKey,
           specialTextSpanBuilder: widget.specialTextSpanBuilder,
           readOnly: widget.readOnly || !_isEnabled,
