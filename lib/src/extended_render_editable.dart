@@ -2167,7 +2167,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         final int length = specialTs.actualText.length;
         int sLength =0;
         if(specialTs is SpecialTextSpan&&(defaultTargetPlatform==TargetPlatform.android||defaultTargetPlatform==TargetPlatform.iOS)){
-          sLength=specialTs.text!.length;
+          sLength=specialTs.text!.length-1;
         }
         if (specialTs.start < offset) {
           offset += length - 1-sLength;
@@ -2184,7 +2184,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         final int length = specialTs.actualText.length;
         int sLength =0;
         if(specialTs is SpecialTextSpan&&(defaultTargetPlatform==TargetPlatform.android||defaultTargetPlatform==TargetPlatform.iOS)){
-          sLength=specialTs.text!.length;
+          sLength=specialTs.text!.length-1;
         }
         if (specialTs.start < toOffset) {
           toOffset += length - 1-sLength;
@@ -2352,7 +2352,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         final int length = specialTs.actualText.length;
         int sLength =0;
         if(specialTs is SpecialTextSpan&&(defaultTargetPlatform==TargetPlatform.android||defaultTargetPlatform==TargetPlatform.iOS)){
-          sLength=specialTs.text!.length;
+          sLength=specialTs.text!.length-1;
         }
 
         if (specialTs.start < start) {
