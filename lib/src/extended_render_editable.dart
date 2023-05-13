@@ -2165,8 +2165,12 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       if (ts is SpecialInlineSpanBase) {
         final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
         final int length = specialTs.actualText.length;
+        int sLength =0;
+        if(specialTs is SpecialTextSpan&&(defaultTargetPlatform==TargetPlatform.android||defaultTargetPlatform==TargetPlatform.iOS)){
+          sLength=specialTs.text!.length;
+        }
         if (specialTs.start < offset) {
-          offset += length - 1;
+          offset += length - 1-sLength;
           return true;
         } else {
           return false;
@@ -2178,8 +2182,12 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       if (ts is SpecialInlineSpanBase) {
         final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
         final int length = specialTs.actualText.length;
+        int sLength =0;
+        if(specialTs is SpecialTextSpan&&(defaultTargetPlatform==TargetPlatform.android||defaultTargetPlatform==TargetPlatform.iOS)){
+          sLength=specialTs.text!.length;
+        }
         if (specialTs.start < toOffset) {
-          toOffset += length - 1;
+          toOffset += length - 1-sLength;
           return true;
         } else {
           return false;
@@ -2342,8 +2350,13 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       if (ts is SpecialInlineSpanBase) {
         final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
         final int length = specialTs.actualText.length;
+        int sLength =0;
+        if(specialTs is SpecialTextSpan&&(defaultTargetPlatform==TargetPlatform.android||defaultTargetPlatform==TargetPlatform.iOS)){
+          sLength=specialTs.text!.length;
+        }
+
         if (specialTs.start < start) {
-          start += length - 1;
+          start += length - 1-sLength;
           return true;
         } else {
           return false;
@@ -2854,11 +2867,50 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       _clipRectLayer.layer = null;
       _paintContents(context, offset);
     }
-    final TextSelection? selection = this.selection;
+    final TextSelection? selection = _getTextSelection();
     if (selection != null && selection.isValid) {
       _paintHandleLayers(context, getEndpointsForSelection(selection), offset);
     }
   }
+
+  TextSelection? _getTextSelection(){
+    TextSelection? newSelection = this.selection;
+    if(selection==null){
+      return null;
+    }
+    if (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS) {
+      int baseOffset = newSelection!.baseOffset;
+      int offset = newSelection!.extentOffset;
+      text!.visitChildren((InlineSpan ts) {
+        if (ts is SpecialInlineSpanBase) {
+          final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
+          int sLength = 0;
+          if (specialTs is SpecialTextSpan &&
+              (defaultTargetPlatform == TargetPlatform.android ||
+                  defaultTargetPlatform == TargetPlatform.iOS)) {
+            sLength = specialTs.text!.length;
+          }
+          if (specialTs.start < baseOffset) {
+            baseOffset -= sLength+1;
+          }
+          if (specialTs.start < offset) {
+            offset -= sLength+1;
+          }
+          if (specialTs.start >= baseOffset && specialTs.start >= offset) {
+            return false;
+          } else {
+            return true;
+          }
+        }
+        return true;
+      });
+      newSelection = newSelection.copyWith(
+          baseOffset: baseOffset, extentOffset: offset);
+    }
+    return newSelection;
+  }
+
 
   final LayerHandle<ClipRectLayer> _clipRectLayer =
       LayerHandle<ClipRectLayer>();
