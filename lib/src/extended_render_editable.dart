@@ -2924,6 +2924,8 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         defaultTargetPlatform == TargetPlatform.iOS) {
       int baseOffset = newSelection!.baseOffset;
       int offset = newSelection!.extentOffset;
+      int oldBaseOffset = newSelection!.baseOffset;
+      int oldOffset = newSelection!.extentOffset;
       text!.visitChildren((InlineSpan ts) {
         if (ts is SpecialInlineSpanBase) {
           final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
@@ -2933,13 +2935,13 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
                   defaultTargetPlatform == TargetPlatform.iOS)) {
             sLength = specialTs.actualText.length - specialTs.text!.length;
           }
-          if (specialTs.start < baseOffset) {
+          if (specialTs.start < oldBaseOffset) {
             baseOffset -= sLength;
           }
-          if (specialTs.start < offset) {
+          if (specialTs.start < oldOffset) {
             offset -= sLength;
           }
-          if (specialTs.start >= baseOffset && specialTs.start >= offset) {
+          if (specialTs.start >= oldBaseOffset && specialTs.start >= oldOffset) {
             return false;
           } else {
             return true;
