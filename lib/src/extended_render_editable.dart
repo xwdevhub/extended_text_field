@@ -2276,14 +2276,75 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         globalToLocal(_lastTapDownPosition! - paintOffset));
     final TextRange word = _textPainter.getWordBoundary(position);
     late TextSelection newSelection;
+
+    //hyx
+
+
+
+
     if (position.offset <= word.start) {
       newSelection = TextSelection.collapsed(offset: word.start);
     } else {
       newSelection = TextSelection.collapsed(
           offset: word.end, affinity: TextAffinity.upstream);
     }
+
+
+    ///hyx 适配
+    if(defaultTargetPlatform == TargetPlatform.iOS){
+      int offset = newSelection.baseOffset;
+      int toOffset = newSelection.extentOffset;
+      text!.visitChildren((InlineSpan ts) {
+        if (ts is SpecialInlineSpanBase) {
+          final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
+          final int length = specialTs.actualText.length;
+          int sLength = 0;
+          if (specialTs is SpecialTextSpan &&
+              (defaultTargetPlatform == TargetPlatform.android ||
+                  defaultTargetPlatform == TargetPlatform.iOS)) {
+            sLength = specialTs.text!.length - 1;
+            if (offset - specialTs.start <= specialTs.text!.length) {
+              sLength =
+                  sLength - (specialTs.text!.length - offset + specialTs.start);
+            }
+          }
+          if (specialTs.start < offset) {
+            offset += length - 1 - sLength;
+            return true;
+          } else {
+            return false;
+          }
+        }
+        return true;
+      });
+      text!.visitChildren((InlineSpan ts) {
+        if (ts is SpecialInlineSpanBase) {
+          final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
+          final int length = specialTs.actualText.length;
+          int sLength = 0;
+          if (specialTs is SpecialTextSpan &&
+              (defaultTargetPlatform == TargetPlatform.android ||
+                  defaultTargetPlatform == TargetPlatform.iOS)) {
+            sLength = specialTs.text!.length - 1;
+            if (toOffset - specialTs.start <= specialTs.text!.length) {
+              sLength =
+                  sLength - (specialTs.text!.length - toOffset + specialTs.start);
+            }
+          }
+          if (specialTs.start < toOffset) {
+            toOffset += length - 1 - sLength;
+            return true;
+          } else {
+            return false;
+          }
+        }
+        return true;
+      });
+      newSelection =newSelection.copyWith(baseOffset: offset,extentOffset: toOffset);
+    }
     _setSelection(newSelection, cause);
   }
+
 
   TextSelection _getWordAtOffset(TextPosition position) {
     debugAssertLayoutUpToDate();
