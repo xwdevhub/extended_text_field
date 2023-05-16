@@ -2573,8 +2573,7 @@ class ExtendedEditableTextState
   void updateFloatingCursor(RawFloatingCursorPoint point) {
     _floatingCursorResetController ??= AnimationController(
       vsync: this,
-    )
-      ..addListener(_onFloatingCursorResetTick);
+    )..addListener(_onFloatingCursorResetTick);
     switch (point.state) {
       case FloatingCursorDragState.Start:
         if (_floatingCursorResetController!.isAnimating) {
@@ -2603,6 +2602,11 @@ class ExtendedEditableTextState
 
         _lastBoundedOffset = _startCaretRect!.center - _floatingCursorOffset;
         _lastTextPosition = currentTextPosition;
+        if (supportSpecialText) {
+          _lastTextPosition = convertTextPainterPostionToTextInputPostion(
+              renderEditable.text!, _lastTextPosition!) ??
+              _lastTextPosition;
+        }
         renderEditable.setFloatingCursor(
             point.state, _lastBoundedOffset!, _lastTextPosition!);
         break;
@@ -2615,6 +2619,11 @@ class ExtendedEditableTextState
             .calculateBoundedFloatingCursorOffset(rawCursorOffset);
         _lastTextPosition = renderEditable.getPositionForPoint(renderEditable
             .localToGlobal(_lastBoundedOffset! + _floatingCursorOffset));
+        if (supportSpecialText) {
+          _lastTextPosition = convertTextPainterPostionToTextInputPostion(
+              renderEditable.text!, _lastTextPosition!) ??
+              _lastTextPosition;
+        }
         renderEditable.setFloatingCursor(
             point.state, _lastBoundedOffset!, _lastTextPosition!);
         break;
@@ -5969,8 +5978,8 @@ class MyLogOutput extends LogOutput {
       if (!file!.existsSync()) {
         file!.createSync(recursive: true);
       }
-    }else{
-      file=null;
+    } else {
+      file = null;
     }
   }
 

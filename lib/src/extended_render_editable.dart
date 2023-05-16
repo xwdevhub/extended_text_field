@@ -2809,6 +2809,10 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     _resetFloatingCursorAnimationValue = resetLerpValue;
     if (_floatingCursorOn) {
       _floatingCursorTextPosition = lastTextPosition;
+      if (supportSpecialText) {
+        _floatingCursorTextPosition = convertTextInputPostionToTextPainterPostion(
+            text!, lastTextPosition!)??_floatingCursorTextPosition;
+      }
       final double? animationValue = _resetFloatingCursorAnimationValue;
       final EdgeInsets sizeAdjustment = animationValue != null
           ? EdgeInsets.lerp(
