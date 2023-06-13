@@ -3636,6 +3636,13 @@ class ExtendedEditableTextState
     }
   }
 
+  /// macos处理(会话列表切换，右键粘贴不能使用)
+  void updateOverlay() {
+    if (Platform.isMacOS) {
+      _selectionOverlay ??= _createSelectionOverlay();
+    }
+  }
+
   /// Toggles the visibility of the toolbar.
   void toggleToolbar([bool hideHandles = true]) {
     final ExtendedTextSelectionOverlay selectionOverlay =
