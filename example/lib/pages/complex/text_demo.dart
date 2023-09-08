@@ -9,7 +9,7 @@ import 'package:example/special_text/emoji_text.dart' as emoji;
 import 'package:example/special_text/my_extended_text_selection_controls.dart';
 import 'package:example/special_text/my_special_text_span_builder.dart';
 import 'package:extended_list/extended_list.dart';
-// import 'package:extended_text/extended_text.dart';
+import 'package:extended_text/extended_text.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:ff_annotation_route_library/ff_annotation_route_library.dart';
 import 'package:flutter/material.dart';
@@ -105,21 +105,21 @@ class _TextDemoState extends State<TextDemo> {
                   height: 30.0,
                 );
                 //print(sessions[index]);
-                // final Widget text = ExtendedText(
-                //   sessions[index],
-                //   textAlign: left ? TextAlign.left : TextAlign.right,
-                //   specialTextSpanBuilder: _mySpecialTextSpanBuilder,
-                //   onSpecialTextTap: (dynamic value) {
-                //     if (value.toString().startsWith('\$')) {
-                //       launch('https://github.com/fluttercandies');
-                //     } else if (value.toString().startsWith('@')) {
-                //       launch('mailto:zmtzawqlp@live.com');
-                //     }
-                //   },
-                // );
+                final Widget text = ExtendedText(
+                  sessions[index],
+                  textAlign: left ? TextAlign.left : TextAlign.right,
+                  specialTextSpanBuilder: _mySpecialTextSpanBuilder,
+                  onSpecialTextTap: (dynamic value) {
+                    if (value.toString().startsWith('\$')) {
+                      launchUrl(Uri.parse('https://github.com/fluttercandies'));
+                    } else if (value.toString().startsWith('@')) {
+                      launchUrl(Uri.parse('mailto:zmtzawqlp@live.com'));
+                    }
+                  },
+                );
                 List<Widget> list = <Widget>[
                   logo,
-                  Expanded(child: Container()),
+                  Expanded(child: text),
                   Container(
                     width: 30.0,
                   )
@@ -158,7 +158,8 @@ class _TextDemoState extends State<TextDemo> {
               ),
               controller: _textEditingController,
               selectionControls: _myExtendedMaterialTextSelectionControls,
-
+              extendedContextMenuBuilder:
+                  MyTextSelectionControls.defaultContextMenuBuilder,
               focusNode: _focusNode,
               decoration: InputDecoration(
                   suffixIcon: GestureDetector(
@@ -296,6 +297,9 @@ class _TextDemoState extends State<TextDemo> {
 
     if (active) {
       activeDollarGrid = activeEmojiGird = activeAtGrid = false;
+      if (!Platform.isAndroid && !Platform.isIOS) {
+        _keyboardHeight = 300;
+      }
     }
 
     activeOne();
@@ -429,18 +433,28 @@ class _TextDemoState extends State<TextDemo> {
     if (selection.isCollapsed && selection.start == 0) {
       return;
     }
+
     final int start =
         selection.isCollapsed ? selection.start - 1 : selection.start;
     final int end = selection.end;
-
+    // improve the case of emoji
+    // https://github.com/dart-lang/sdk/issues/35798
+    final CharacterRange characterRange =
+        CharacterRange.at(actualText, start, end);
     value = TextEditingValue(
-      text: actualText.replaceRange(start, end, ''),
-      selection: TextSelection.collapsed(offset: start),
+      text: characterRange.stringBefore + characterRange.stringAfter,
+      selection:
+          TextSelection.collapsed(offset: characterRange.stringBefore.length),
     );
 
     final TextSpan oldTextSpan = _mySpecialTextSpanBuilder.build(_value.text);
 
-    value = handleSpecialTextSpanDelete(value, _value, oldTextSpan, null);
+    value = ExtendedTextLibraryUtils.handleSpecialTextSpanDelete(
+      value,
+      _value,
+      oldTextSpan,
+      null,
+    );
 
     _textEditingController.value = value;
   }
