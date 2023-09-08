@@ -94,7 +94,12 @@ class ExtendedEditableText extends _EditableText {
     super.magnifierConfiguration = TextMagnifierConfiguration.disabled,
     super.undoController,
     this.specialTextSpanBuilder,
+    this.pasteTextIntercept,
+    this.offsetFunction,
   });
+
+  final Function? pasteTextIntercept;
+  Function(Offset)? offsetFunction;
 
   /// build your ccustom text span
   final SpecialTextSpanBuilder? specialTextSpanBuilder;
@@ -220,6 +225,250 @@ class ExtendedEditableTextState extends _EditableTextState {
         spellCheckService: spellCheckService ?? DefaultSpellCheckService());
   }
 
+  /// Copy current selection to [Clipboard].
+  @override
+  void copySelection(SelectionChangedCause cause) {
+    final TextSelection selection = textEditingValue.selection;
+    if (selection.isCollapsed || widget.obscureText) {
+      return;
+    }
+    // final String text = textEditingValue.text;
+    // Clipboard.setData(ClipboardData(text: selection.textInside(text)));
+    _copyText(selection);
+    if (cause == SelectionChangedCause.toolbar) {
+      bringIntoView(textEditingValue.selection.extent);
+      hideToolbar(false);
+
+      switch (defaultTargetPlatform) {
+        case TargetPlatform.iOS:
+        case TargetPlatform.macOS:
+        case TargetPlatform.linux:
+        case TargetPlatform.windows:
+          break;
+        case TargetPlatform.android:
+        case TargetPlatform.fuchsia:
+          // Collapse the selection and hide the toolbar and handles.
+          userUpdateTextEditingValue(
+            TextEditingValue(
+              text: textEditingValue.text,
+              selection: TextSelection.collapsed(
+                  offset: textEditingValue.selection.end),
+            ),
+            SelectionChangedCause.toolbar,
+          );
+      }
+    }
+    clipboardStatus.update();
+  }
+
+  /// Cut current selection to [Clipboard].
+  @override
+  void cutSelection(SelectionChangedCause cause) {
+    if (widget.readOnly || widget.obscureText) {
+      return;
+    }
+    final TextSelection selection = textEditingValue.selection;
+    final String text = textEditingValue.text;
+    _copyText(selection);
+    if (selection.isCollapsed) {
+      return;
+    }
+    Clipboard.setData(ClipboardData(text: selection.textInside(text)));
+    _replaceText(ReplaceTextIntent(textEditingValue, '', selection, cause));
+    if (cause == SelectionChangedCause.toolbar) {
+      // Schedule a call to bringIntoView() after renderEditable updates.
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          bringIntoView(textEditingValue.selection.extent);
+        }
+      });
+      hideToolbar();
+    }
+    clipboardStatus.update();
+  }
+
+  /// Paste text from [Clipboard].
+  @override
+  Future<void> pasteText(SelectionChangedCause cause) async {
+    if (widget.readOnly) {
+      return;
+    }
+    final TextSelection selection = textEditingValue.selection;
+    if (!selection.isValid) {
+      return;
+    }
+    await extendedEditableText.pasteTextIntercept?.call();
+    // Snapshot the input before using `await`.
+    // See https://github.com/flutter/flutter/issues/11427
+    final ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
+    String? text;
+    if (data == null) {
+      return;
+    } else {
+      text = data.text;
+    }
+
+    /// 过滤粘贴板上的文件
+    if (!Platform.isAndroid) {
+      final List<String> filePaths = await Pasteboard.files();
+      if (filePaths.isNotEmpty) {
+        // _shouldShowCaret = true;
+        // text = '';
+        return;
+      }
+      Uint8List? imageValue = await Pasteboard.image;
+      if (imageValue != null) {
+        // _shouldShowCaret = true;
+        // text = '';
+        return;
+      }
+      String? html = await Pasteboard.html;
+      if (html != null && html.isNotEmpty) {
+        // _shouldShowCaret = true;
+        // text = '';
+        return;
+      }
+    }
+
+    // After the paste, the cursor should be collapsed and located after the
+    // pasted content.
+    final int lastSelectionIndex =
+        math.max(selection.baseOffset, selection.extentOffset);
+    final TextEditingValue collapsedTextEditingValue =
+        textEditingValue.copyWith(
+      selection: TextSelection.collapsed(offset: lastSelectionIndex),
+    );
+
+    userUpdateTextEditingValue(
+      collapsedTextEditingValue.replaced(selection, text!),
+      cause,
+    );
+    if (cause == SelectionChangedCause.toolbar) {
+      // Schedule a call to bringIntoView() after renderEditable updates.
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          bringIntoView(textEditingValue.selection.extent);
+        }
+      });
+      hideToolbar();
+    }
+  }
+
+  void _copyText(TextSelection selection) {
+    int selectLength = 0;
+    int start = selection.start;
+    int end = selection.end;
+    Map map = {};
+    int index = 0;
+    bool isText = false;
+    bool isImage = false;
+    renderEditable.text!.visitChildren((InlineSpan ts) {
+      if (ts is SpecialInlineSpanBase) {
+        final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
+        if (start > specialTs.start) {
+          selectLength += specialTs.actualText.length;
+          return true;
+        }
+        if (end <= specialTs.start) {
+          return false;
+        } else {
+          if (ts is ImageSpan) {
+            if (ts.actualText.contains("[image")) {
+              isImage = true;
+            } else {
+              isText = true;
+            }
+            map[index] = ts.actualText.trim();
+            index++;
+            selectLength += ts.actualText.length;
+            return true;
+          } else if (ts is ExtendedWidgetSpan) {
+            if (ts.child is Text) {
+              isText = true;
+              Text text = ts.child as Text;
+              map[index] = text.data;
+            } else {
+              map[index] = ts.actualText;
+            }
+            index++;
+            selectLength += ts.actualText.length;
+          }
+        }
+      } else {
+        if (ts is TextSpan) {
+          if (ts.text != null && ts.text!.isEmpty) {
+            return true;
+          }
+          if (start >= selectLength + ts.text!.length) {
+            selectLength += ts.text!.length;
+            return true;
+          }
+
+          if (end <= selectLength) {
+            return false;
+          }
+          isText = true;
+          if (start > selectLength) {
+            if (selectLength + ts.text!.length > end) {
+              map[index] =
+                  ts.text!.substring(start - selectLength, end - selectLength);
+            } else {
+              map[index] =
+                  ts.text!.substring(start - selectLength, ts.text!.length);
+            }
+          } else {
+            if (selectLength + ts.text!.length > end) {
+              map[index] = ts.text!.substring(0, end - selectLength);
+            } else {
+              map[index] = ts.text!.substring(0, ts.text!.length);
+            }
+          }
+          index++;
+          selectLength += ts.text!.length;
+        }
+      }
+      return true;
+    });
+    if (isText && isImage) {
+      String copyHtml5 = "";
+      map.forEach((key, value) {
+        String text = value as String;
+        var regexImage = r"(\[image:(.*?)\])";
+        if (text.contains("[image:") && text.contains(" ]")) {
+          //图片
+          copyHtml5 +=
+              '<img alt src="${text.replaceAll("[image:", "").replaceAll(" ]", "")}">';
+        } else {
+          copyHtml5 += '<span>$text</span>';
+        }
+      });
+
+      RichClipboard.setData(RichClipboardData(
+        html: "<html>"
+            "<body>"
+            '$copyHtml5'
+            '</body>'
+            "</html>",
+      ));
+    } else {
+      if (isText) {
+        String text = "";
+        map.forEach((key, value) {
+          text += value;
+        });
+        Clipboard.setData(ClipboardData(text: text));
+      }
+      if (isImage) {
+        List<String> list = [];
+        map.forEach((key, value) {
+          list.add(
+              (value as String).replaceAll("[image:", "").replaceAll(" ]", ""));
+        });
+        Pasteboard.writeFiles(list);
+      }
+    }
+  }
+
   // zmtzawqlp
   @override
   Widget build(BuildContext context) {
@@ -236,7 +485,6 @@ class ExtendedEditableTextState extends _EditableTextState {
         TextScaler.linear(textScaleFactor),
       (null, null) => MediaQuery.textScalerOf(context),
     };
-
     return _CompositionCallback(
       compositeCallback: _compositeCallback,
       enabled: _hasInputConnection,
@@ -395,6 +643,7 @@ class ExtendedEditableTextState extends _EditableTextState {
                                     widget.autocorrectionTextRectColor,
                                 clipBehavior: widget.clipBehavior,
                                 supportSpecialText: supportSpecialText,
+                                offsetFunction: extendedEditableText.offsetFunction,
                               ),
                             ),
                           ),
@@ -1014,9 +1263,11 @@ class _ExtendedEditable extends _Editable {
     super.promptRectColor,
     required super.clipBehavior,
     this.supportSpecialText = false,
+    this.offsetFunction,
   });
 
   final bool supportSpecialText;
+  Function(Offset)? offsetFunction;
 
   @override
   ExtendedRenderEditable createRenderObject(BuildContext context) {

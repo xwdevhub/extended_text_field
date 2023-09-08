@@ -1964,7 +1964,7 @@ class _EditableTextState extends State<_EditableText>
 
   /// Whether or not spell check is enabled.
   ///
-  /// Spell check is enabled when a [SpellCheckConfiguration] has been specified
+  /// Spell check is enabled when a [_SpellCheckConfiguration] has been specified
   /// for the widget.
   bool get spellCheckEnabled => _spellCheckConfiguration.spellCheckEnabled;
 
@@ -2908,7 +2908,7 @@ class _EditableTextState extends State<_EditableText>
   /// The last known [TextEditingValue] of the platform text input plugin.
   ///
   /// This value is updated when the platform text input plugin sends a new
-  /// update via [updateEditingValue], or when [EditableText] calls
+  /// update via [updateEditingValue], or when [_EditableText] calls
   /// [TextInputConnection.setEditingState] to overwrite the platform text input
   /// plugin's [TextEditingValue].
   ///

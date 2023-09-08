@@ -136,7 +136,6 @@ mixin CustomKeyboardShowStateMixin<T extends StatefulWidget> on State<T> {
           enableDrag: true,
           builder: (BuildContext b) {
             final MediaQueryData mediaQueryData = MediaQuery.of(b);
-
             return Material(
               //shadowColor: Colors.grey,
               color: Colors.grey.withOpacity(0.3),

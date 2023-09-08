@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -13,6 +14,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import 'package:pasteboard/pasteboard.dart';
+import 'package:rich_clipboard/rich_clipboard.dart';
 
 part 'package:extended_text_field/src/extended/rendering/editable.dart';
 part 'package:extended_text_field/src/extended/widgets/editable_text.dart';
@@ -103,7 +106,12 @@ class ExtendedTextField extends _TextField {
     this.extendedSpellCheckConfiguration,
     this.specialTextSpanBuilder,
     super.magnifierConfiguration,
+    this.pasteTextIntercept,
+    this.offsetFunction,
   });
+
+  final VoidCallback? pasteTextIntercept;
+  final Function(Offset)? offsetFunction;
 
   /// build your ccustom text span
   final SpecialTextSpanBuilder? specialTextSpanBuilder;
@@ -371,7 +379,6 @@ class ExtendedTextFieldState extends _TextFieldState {
         cursorOffset = Offset(
             iOSHorizontalOffset / MediaQuery.devicePixelRatioOf(context), 0);
         autocorrectionTextRectColor = selectionColor;
-
       case TargetPlatform.macOS:
         final CupertinoThemeData cupertinoTheme = CupertinoTheme.of(context);
         forcePressEnabled = false;
@@ -412,7 +419,6 @@ class ExtendedTextFieldState extends _TextFieldState {
                 theme.colorScheme.primary;
         selectionColor = selectionStyle.selectionColor ??
             theme.colorScheme.primary.withOpacity(0.40);
-
       case TargetPlatform.linux:
         forcePressEnabled = false;
         textSelectionControls ??= desktopTextSelectionHandleControls;
@@ -536,6 +542,8 @@ class ExtendedTextFieldState extends _TextFieldState {
               TextMagnifier.adaptiveMagnifierConfiguration,
           // zmtzawqlp
           specialTextSpanBuilder: extenedTextField.specialTextSpanBuilder,
+          pasteTextIntercept: extenedTextField.pasteTextIntercept,
+          offsetFunction: extenedTextField.offsetFunction,
         ),
       ),
     );
