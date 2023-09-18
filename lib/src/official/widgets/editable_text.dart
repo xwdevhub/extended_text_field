@@ -3767,30 +3767,30 @@ class _EditableTextState extends State<_EditableText>
   // plugin needs to estimate the composing rect based on the latest caret rect,
   // when the composing rect info didn't arrive in time.
   void _updateComposingRectIfNeeded() {
-    final TextRange composingRange = _value.composing;
-    assert(mounted);
-    Rect? composingRect =
-        renderEditable.getRectForComposingRange(composingRange);
-    // Send the caret location instead if there's no marked text yet.
-    if (composingRect == null) {
-      assert(!composingRange.isValid || composingRange.isCollapsed);
-      final int offset = composingRange.isValid ? composingRange.start : 0;
-      composingRect =
-          renderEditable.getLocalRectForCaret(TextPosition(offset: offset));
-    }
-    _textInputConnection!.setComposingRect(composingRect);
+    // final TextRange composingRange = _value.composing;
+    // assert(mounted);
+    // Rect? composingRect =
+    //     renderEditable.getRectForComposingRange(composingRange);
+    // // Send the caret location instead if there's no marked text yet.
+    // if (composingRect == null) {
+    //   assert(!composingRange.isValid || composingRange.isCollapsed);
+    //   final int offset = composingRange.isValid ? composingRange.start : 0;
+    //   composingRect =
+    //       renderEditable.getLocalRectForCaret(TextPosition(offset: offset));
+    // }
+    // _textInputConnection!.setComposingRect(composingRect);
   }
 
   void _updateCaretRectIfNeeded() {
-    final TextSelection? selection = renderEditable.selection;
-    if (selection == null || !selection.isValid || !selection.isCollapsed) {
-      return;
-    }
-    final TextPosition currentTextPosition =
-        TextPosition(offset: selection.baseOffset);
-    final Rect caretRect =
-        renderEditable.getLocalRectForCaret(currentTextPosition);
-    _textInputConnection!.setCaretRect(caretRect);
+    // final TextSelection? selection = renderEditable.selection;
+    // if (selection == null || !selection.isValid || !selection.isCollapsed) {
+    //   return;
+    // }
+    // final TextPosition currentTextPosition =
+    //     TextPosition(offset: selection.baseOffset);
+    // final Rect caretRect =
+    //     renderEditable.getLocalRectForCaret(currentTextPosition);
+    // _textInputConnection!.setCaretRect(caretRect);
   }
 
   TextDirection get _textDirection =>
@@ -5278,10 +5278,43 @@ class _UpdateTextSelectionAction<T extends DirectionalCaretMovementIntent>
         (intent.forward
             ? selection.baseOffset > selection.extentOffset
             : selection.baseOffset < selection.extentOffset);
-    final TextPosition newExtent = applyTextBoundary(
+    TextPosition newExtent = applyTextBoundary(
         shouldTargetBase ? selection.base : extent,
         intent.forward,
         getTextBoundary());
+
+    if ((state.renderEditable as ExtendedRenderEditable).supportSpecialText) {
+      // xw -键盘左右切换，涉及@/图片切换问题
+      int caretOffset = newExtent.offset;
+      int textOffset = 0;
+      state.renderEditable.text!.visitChildren((InlineSpan ts) {
+        if (ts is SpecialInlineSpanBase) {
+          final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
+          final int length = specialTs.actualText.length;
+          final int tempOffset = textOffset +
+              (length - ExtendedTextLibraryUtils.getInlineOffset(ts));
+          if (intent.forward && tempOffset >= newExtent.offset) {
+            caretOffset = textOffset + length;
+          } else if (!intent.forward && tempOffset >= newExtent.offset) {
+            caretOffset -=
+                length - ExtendedTextLibraryUtils.getInlineOffset(ts);
+          }
+          textOffset += length;
+        } else {
+          textOffset += ExtendedTextLibraryUtils.getInlineOffset(ts);
+        }
+        if (textOffset >= newExtent.offset) {
+          return false;
+        }
+        return true;
+      });
+      if (textOffset != newExtent.offset) {
+        newExtent = TextPosition(
+            offset: max(0, caretOffset), affinity: newExtent.affinity);
+      }
+      newExtent = newExtent;
+    }
+
     final TextSelection newSelection = collapseSelection ||
             (!isExpand && newExtent.offset == selection.baseOffset)
         ? TextSelection.fromPosition(newExtent)
@@ -5350,10 +5383,14 @@ class _UpdateTextSelectionVerticallyAction<
       _verticalMovementRun = null;
       _runSelection = null;
     }
+    // xw - 解决PC端输入框 上、下、PgUp、PgDn按键
+    TextPosition extent = state.renderEditable.selection!.extent;
+    extent =
+        ExtendedTextLibraryUtils.convertTextInputPostionToTextPainterPostion(
+            state.renderEditable.text!, extent);
 
     final VerticalCaretMovementRun currentRun = _verticalMovementRun ??
-        state.renderEditable
-            .startVerticalCaretMovement(state.renderEditable.selection!.extent);
+        state.renderEditable.startVerticalCaretMovement(extent);
 
     final bool shouldMove = intent
             is ExtendSelectionVerticallyToAdjacentPageIntent
@@ -5362,11 +5399,33 @@ class _UpdateTextSelectionVerticallyAction<
         : intent.forward
             ? currentRun.moveNext()
             : currentRun.movePrevious();
-    final TextPosition newExtent = shouldMove
+    TextPosition newExtent = shouldMove
         ? currentRun.current
         : intent.forward
             ? TextPosition(offset: state._value.text.length)
             : const TextPosition(offset: 0);
+
+    if (shouldMove) {
+      int baseOffset = newExtent.offset;
+      state.renderEditable.text!.visitChildren((InlineSpan ts) {
+        if (ts is SpecialInlineSpanBase) {
+          final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
+          final int length = specialTs.actualText.length;
+          if (specialTs.start < baseOffset) {
+            baseOffset += length - 1;
+            return true;
+          } else {
+            return false;
+          }
+        }
+        return true;
+      });
+      newExtent = TextPosition(
+        offset: baseOffset,
+        affinity: newExtent.affinity,
+      );
+    }
+
     final TextSelection newSelection = collapseSelection
         ? TextSelection.fromPosition(newExtent)
         : value.selection.extendTo(newExtent);

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:math';
 import 'dart:ui' as ui;
 
 import 'package:extended_text_field/src/extended/cupertino/spell_check_suggestions_toolbar.dart';

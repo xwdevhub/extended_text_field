@@ -673,7 +673,7 @@ class _SelectionOverlay {
       'Use `contextMenuBuilder` in `showToolbar` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        required this.selectionDelegate,
+    required this.selectionDelegate,
     required this.clipboardStatus,
     required this.startHandleLayerLink,
     required this.endHandleLayerLink,
@@ -684,7 +684,7 @@ class _SelectionOverlay {
       'Use `contextMenuBuilder` in `showToolbar` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        Offset? toolbarLocation,
+    Offset? toolbarLocation,
     this.magnifierConfiguration = TextMagnifierConfiguration.disabled,
   })  : _startHandleType = startHandleType,
         _lineHeightAtStart = lineHeightAtStart,
@@ -1772,9 +1772,16 @@ class _TextSelectionGestureDetectorBuilder {
   void _extendSelection(Offset offset, SelectionChangedCause cause) {
     assert(renderEditable.selection?.baseOffset != null);
 
-    final TextPosition tappedPosition =
-        renderEditable.getPositionForPoint(offset);
+    TextPosition tappedPosition = renderEditable.getPositionForPoint(offset);
     final TextSelection selection = renderEditable.selection!;
+
+    /// zmtzawqlp
+    if ((renderEditable as ExtendedRenderEditable).hasSpecialInlineSpanBase) {
+      tappedPosition =
+          ExtendedTextLibraryUtils.convertTextPainterPostionToTextInputPostion(
+                  renderEditable.text!, tappedPosition) ??
+              tappedPosition;
+    }
     final TextSelection nextSelection = selection.copyWith(
       extentOffset: tappedPosition.offset,
     );

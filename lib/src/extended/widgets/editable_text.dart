@@ -164,6 +164,7 @@ class ExtendedEditableTextState extends _EditableTextState {
       widget as ExtendedEditableText;
   ExtendedSpellCheckConfiguration get extendedSpellCheckConfiguration =>
       _spellCheckConfiguration as ExtendedSpellCheckConfiguration;
+  bool _shouldShowCaret = false;
 
   /// whether to support build SpecialText
   bool get supportSpecialText =>
@@ -292,17 +293,15 @@ class ExtendedEditableTextState extends _EditableTextState {
     if (widget.readOnly) {
       return;
     }
-    final TextSelection selection = textEditingValue.selection;
-    if (!selection.isValid) {
-      return;
-    }
+
     await extendedEditableText.pasteTextIntercept?.call();
     // Snapshot the input before using `await`.
     // See https://github.com/flutter/flutter/issues/11427
+    widget.controller.notifyListeners();
     final ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
     String? text;
     if (data == null) {
-      return;
+      text = '';
     } else {
       text = data.text;
     }
@@ -311,24 +310,24 @@ class ExtendedEditableTextState extends _EditableTextState {
     if (!Platform.isAndroid) {
       final List<String> filePaths = await Pasteboard.files();
       if (filePaths.isNotEmpty) {
-        // _shouldShowCaret = true;
-        // text = '';
-        return;
+        _shouldShowCaret = true;
+        text = '';
       }
       Uint8List? imageValue = await Pasteboard.image;
       if (imageValue != null) {
-        // _shouldShowCaret = true;
-        // text = '';
-        return;
+        _shouldShowCaret = true;
+        text = '';
       }
       String? html = await Pasteboard.html;
       if (html != null && html.isNotEmpty) {
-        // _shouldShowCaret = true;
-        // text = '';
-        return;
+        _shouldShowCaret = true;
+        text = '';
       }
     }
-
+    final TextSelection selection = textEditingValue.selection;
+    if (!selection.isValid) {
+      return;
+    }
     // After the paste, the cursor should be collapsed and located after the
     // pasted content.
     final int lastSelectionIndex =
@@ -515,6 +514,11 @@ class ExtendedEditableTextState extends _EditableTextState {
                     // composing text in order to allow the saving of partial words in that
                     // case.
                     break;
+                }
+                if (oldValue.selection.start == oldValue.selection.end &&
+                    newValue.selection.start == newValue.selection.end &&
+                    oldValue.selection.start != newValue.selection.start) {
+                  return true;
                 }
 
                 return oldValue.text != newValue.text ||
@@ -981,6 +985,9 @@ class ExtendedEditableTextState extends _EditableTextState {
         widget.readOnly ? _value.selection != value.selection : _value != value;
     if (shouldShowCaret) {
       _scheduleShowCaretOnScreen(withAnimation: true);
+    } else if (_shouldShowCaret) {
+      _shouldShowCaret = false;
+      _scheduleShowCaretOnScreen(withAnimation: true);
     }
 
     // Even if the value doesn't change, it may be necessary to focus and build
@@ -1067,6 +1074,104 @@ class ExtendedEditableTextState extends _EditableTextState {
         }
         break;
     }
+  }
+
+  @override
+  void _scheduleShowCaretOnScreen({required bool withAnimation}) {
+    if (_showCaretOnScreenScheduled) {
+      return;
+    }
+    _showCaretOnScreenScheduled = true;
+    SchedulerBinding.instance.addPostFrameCallback((Duration _) {
+      _showCaretOnScreenScheduled = false;
+      // Since we are in a post frame callback, check currentContext in case
+      // RenderEditable has been disposed (in which case it will be null).
+      final _RenderEditable? renderEditable =
+          _editableKey.currentContext?.findRenderObject() as _RenderEditable?;
+      if (renderEditable == null ||
+          !(renderEditable.selection?.isValid ?? false) ||
+          !_scrollController.hasClients) {
+        return;
+      }
+
+      final double lineHeight = renderEditable.preferredLineHeight;
+
+      // Enlarge the target rect by scrollPadding to ensure that caret is not
+      // positioned directly at the edge after scrolling.
+      double bottomSpacing = widget.scrollPadding.bottom;
+      if (_selectionOverlay?.selectionControls != null) {
+        final double handleHeight = _selectionOverlay!.selectionControls!
+            .getHandleSize(lineHeight)
+            .height;
+        final double interactiveHandleHeight = math.max(
+          handleHeight,
+          kMinInteractiveDimension,
+        );
+        final Offset anchor =
+            _selectionOverlay!.selectionControls!.getHandleAnchor(
+          TextSelectionHandleType.collapsed,
+          lineHeight,
+        );
+        final double handleCenter = handleHeight / 2 - anchor.dy;
+        bottomSpacing = math.max(
+          handleCenter + interactiveHandleHeight / 2,
+          bottomSpacing,
+        );
+      }
+
+      final EdgeInsets caretPadding =
+          widget.scrollPadding.copyWith(bottom: bottomSpacing);
+
+      // zmtzawqlp - xw update
+      TextPosition caretPosition = renderEditable.selection!.extent;
+      if (supportSpecialText) {
+        caretPosition = ExtendedTextLibraryUtils
+            .convertTextInputPostionToTextPainterPostion(
+          renderEditable.text!,
+          caretPosition,
+        );
+      }
+
+      final Rect caretRect = renderEditable.getLocalRectForCaret(caretPosition);
+      final RevealedOffset targetOffset = _getOffsetToRevealCaret(caretRect);
+
+      final Rect rectToReveal;
+      final TextSelection selection = textEditingValue.selection;
+      if (selection.isCollapsed) {
+        rectToReveal = targetOffset.rect;
+      } else {
+        final List<TextBox> selectionBoxes =
+            renderEditable.getBoxesForSelection(selection);
+        // selectionBoxes may be empty if, for example, the selection does not
+        // encompass a full character, like if it only contained part of an
+        // extended grapheme cluster.
+        if (selectionBoxes.isEmpty) {
+          rectToReveal = targetOffset.rect;
+        } else {
+          rectToReveal = selection.baseOffset < selection.extentOffset
+              ? selectionBoxes.last.toRect()
+              : selectionBoxes.first.toRect();
+        }
+      }
+
+      if (withAnimation) {
+        _scrollController.animateTo(
+          targetOffset.offset,
+          duration: _EditableTextState._caretAnimationDuration,
+          curve: _EditableTextState._caretAnimationCurve,
+        );
+        renderEditable.showOnScreen(
+          rect: caretPadding.inflateRect(rectToReveal),
+          duration: _EditableTextState._caretAnimationDuration,
+          curve: _EditableTextState._caretAnimationCurve,
+        );
+      } else {
+        _scrollController.jumpTo(targetOffset.offset);
+        renderEditable.showOnScreen(
+          rect: caretPadding.inflateRect(rectToReveal),
+        );
+      }
+    });
   }
 }
 
