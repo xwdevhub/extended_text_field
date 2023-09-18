@@ -157,6 +157,34 @@ class ExtendedRenderEditable extends _RenderEditable {
   }
 
   @override
+  TextSelection getLineAtOffset(TextPosition position) {
+    debugAssertLayoutUpToDate();
+    final TextPosition tempPosition = hasSpecialInlineSpanBase
+        ? ExtendedTextLibraryUtils.convertTextInputPostionToTextPainterPostion(
+            text!, position)
+        : position;
+
+    final TextRange line = _textPainter.getLineBoundary(tempPosition);
+    // If text is obscured, the entire string should be treated as one line.
+
+    late TextSelection newSelection;
+    if (obscureText) {
+      newSelection =
+          TextSelection(baseOffset: 0, extentOffset: plainText.length);
+    } else {
+      newSelection =
+          TextSelection(baseOffset: line.start, extentOffset: line.end);
+    }
+    newSelection = hasSpecialInlineSpanBase
+        ? ExtendedTextLibraryUtils
+            .convertTextPainterSelectionToTextInputSelection(
+                text!, newSelection)
+        : newSelection;
+
+    return newSelection;
+  }
+
+  @override
   List<TextSelectionPoint> getEndpointsForSelection(TextSelection selection) {
     // zmtzawqlp
     if (hasSpecialInlineSpanBase) {
@@ -182,6 +210,23 @@ class ExtendedRenderEditable extends _RenderEditable {
   void setPromptRectRange(TextRange? newRange) {
     _autocorrectHighlightPainter.highlightedRange =
         getActualSelection(newRange: newRange);
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    final InlineSpan? textSpan = _textPainter.text;
+    final Offset effectivePosition = position - _paintOffset;
+    if (textSpan != null) {
+      final TextPosition textPosition =
+          _textPainter.getPositionForOffset(effectivePosition);
+      final Object? span = textSpan.getSpanForPosition(textPosition);
+      if (span is HitTestTarget) {
+        result.add(HitTestEntry(span));
+        return true;
+      }
+    }
+    // return hitTestInlineChildren(result, position);
+    return hitTestInlineChildren(result, effectivePosition);
   }
 
   TextSelection? getActualSelection({TextRange? newRange}) {

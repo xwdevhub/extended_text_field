@@ -165,6 +165,7 @@ class ExtendedEditableTextState extends _EditableTextState {
       widget as ExtendedEditableText;
   ExtendedSpellCheckConfiguration get extendedSpellCheckConfiguration =>
       _spellCheckConfiguration as ExtendedSpellCheckConfiguration;
+  bool _shouldShowCaret = false;
 
   /// whether to support build SpecialText
   bool get supportSpecialText =>
@@ -293,17 +294,15 @@ class ExtendedEditableTextState extends _EditableTextState {
     if (widget.readOnly) {
       return;
     }
-    final TextSelection selection = textEditingValue.selection;
-    if (!selection.isValid) {
-      return;
-    }
+
     await extendedEditableText.pasteTextIntercept?.call();
     // Snapshot the input before using `await`.
     // See https://github.com/flutter/flutter/issues/11427
+    widget.controller.notifyListeners();
     final ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
     String? text;
     if (data == null) {
-      return;
+      text = '';
     } else {
       text = data.text;
     }
@@ -312,24 +311,24 @@ class ExtendedEditableTextState extends _EditableTextState {
     if (!Platform.isAndroid) {
       final List<String> filePaths = await Pasteboard.files();
       if (filePaths.isNotEmpty) {
-        // _shouldShowCaret = true;
-        // text = '';
-        return;
+        _shouldShowCaret = true;
+        text = '';
       }
       Uint8List? imageValue = await Pasteboard.image;
       if (imageValue != null) {
-        // _shouldShowCaret = true;
-        // text = '';
-        return;
+        _shouldShowCaret = true;
+        text = '';
       }
       String? html = await Pasteboard.html;
       if (html != null && html.isNotEmpty) {
-        // _shouldShowCaret = true;
-        // text = '';
-        return;
+        _shouldShowCaret = true;
+        text = '';
       }
     }
-
+    final TextSelection selection = textEditingValue.selection;
+    if (!selection.isValid) {
+      return;
+    }
     // After the paste, the cursor should be collapsed and located after the
     // pasted content.
     final int lastSelectionIndex =
@@ -528,6 +527,11 @@ class ExtendedEditableTextState extends _EditableTextState {
                     // composing text in order to allow the saving of partial words in that
                     // case.
                     break;
+                }
+                if (oldValue.selection.start == oldValue.selection.end &&
+                    newValue.selection.start == newValue.selection.end &&
+                    oldValue.selection.start != newValue.selection.start) {
+                  return true;
                 }
 
                 return oldValue.text != newValue.text ||
@@ -1015,6 +1019,9 @@ class ExtendedEditableTextState extends _EditableTextState {
         widget.readOnly ? _value.selection != value.selection : _value != value;
     if (shouldShowCaret) {
       _scheduleShowCaretOnScreen(withAnimation: true);
+    } else if (_shouldShowCaret) {
+      _shouldShowCaret = false;
+      _scheduleShowCaretOnScreen(withAnimation: true);
     }
 
     // Even if the value doesn't change, it may be necessary to focus and build
@@ -1159,11 +1166,17 @@ class ExtendedEditableTextState extends _EditableTextState {
       final EdgeInsets caretPadding =
           widget.scrollPadding.copyWith(bottom: bottomSpacing);
 
-      final Rect caretRect = renderEditable.getLocalRectForCaret(
-        // renderEditable.selection
-        // zmtzawqlp
-        (renderEditable as ExtendedRenderEditable).getActualSelection()!.extent,
-      );
+      // zmtzawqlp - xw update
+      TextPosition caretPosition = renderEditable.selection!.extent;
+      if (supportSpecialText) {
+        caretPosition = ExtendedTextLibraryUtils
+            .convertTextInputPostionToTextPainterPostion(
+          renderEditable.text!,
+          caretPosition,
+        );
+      }
+
+      final Rect caretRect = renderEditable.getLocalRectForCaret(caretPosition);
       final RevealedOffset targetOffset = _getOffsetToRevealCaret(caretRect);
 
       final Rect rectToReveal;

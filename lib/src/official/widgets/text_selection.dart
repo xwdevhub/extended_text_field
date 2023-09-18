@@ -1903,9 +1903,16 @@ class _TextSelectionGestureDetectorBuilder {
   void _extendSelection(Offset offset, SelectionChangedCause cause) {
     assert(renderEditable.selection?.baseOffset != null);
 
-    final TextPosition tappedPosition =
-        renderEditable.getPositionForPoint(offset);
+    TextPosition tappedPosition = renderEditable.getPositionForPoint(offset);
     final TextSelection selection = renderEditable.selection!;
+
+    /// zmtzawqlp
+    if ((renderEditable as ExtendedRenderEditable).hasSpecialInlineSpanBase) {
+      tappedPosition =
+          ExtendedTextLibraryUtils.convertTextPainterPostionToTextInputPostion(
+                  renderEditable.text!, tappedPosition) ??
+              tappedPosition;
+    }
     final TextSelection nextSelection = selection.copyWith(
       extentOffset: tappedPosition.offset,
     );
