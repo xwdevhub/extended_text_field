@@ -234,4 +234,84 @@ class ExtendedRenderEditable extends _RenderEditable {
             .convertTextInputSelectionToTextPainterSelection(text!, value!)
         : value;
   }
+
+  /// Returns the [Rect] in local coordinates for the caret at the given text
+  /// position.
+  ///
+  /// See also:
+  ///
+  ///  * [getPositionForPoint], which is the reverse operation, taking
+  ///    an [Offset] in global coordinates and returning a [TextPosition].
+  ///  * [getEndpointsForSelection], which is the equivalent but for
+  ///    a selection rather than a particular text position.
+  ///  * [TextPainter.getOffsetForCaret], the equivalent method for a
+  ///    [TextPainter] object.
+  @override
+  Rect getLocalRectForCaret(TextPosition caretPosition) {
+    _computeTextMetricsIfNeeded();
+    final Rect caretPrototype = _caretPrototype;
+    Offset caretOffset =
+        _textPainter.getOffsetForCaret(caretPosition, caretPrototype);
+
+    if (caretOffset.dx == 0) {
+      var length = 0;
+      text?.visitChildren((InlineSpan ts) {
+        length += ExtendedTextLibraryUtils.getInlineOffset(ts);
+        if (length > caretPosition.offset) {
+          return false;
+        }
+        return true;
+      });
+      if (length == caretPosition.offset) {
+        caretOffset = ExtendedTextLibraryUtils.getCaretOffset(
+          caretPosition,
+          _textPainter,
+          hasSpecialInlineSpanBase,
+          boxHeightStyle: selectionHeightStyle,
+          boxWidthStyle: selectionWidthStyle,
+        );
+      }
+    }
+
+    Rect caretRect = caretPrototype.shift(caretOffset + cursorOffset);
+    final double scrollableWidth =
+        math.max(_textPainter.width + _caretMargin, size.width);
+
+    final double caretX = clampDouble(
+        caretRect.left, 0, math.max(scrollableWidth - _caretMargin, 0));
+    caretRect = Offset(caretX, caretRect.top) & caretRect.size;
+
+    final double caretHeight = cursorHeight;
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        final double fullHeight =
+            _textPainter.getFullHeightForCaret(caretPosition, caretPrototype) ??
+                _textPainter.preferredLineHeight;
+        final double heightDiff = fullHeight - caretRect.height;
+        // Center the caret vertically along the text.
+        caretRect = Rect.fromLTWH(
+          caretRect.left,
+          caretRect.top + heightDiff / 2,
+          caretRect.width,
+          caretRect.height,
+        );
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.windows:
+        // Override the height to take the full height of the glyph at the TextPosition
+        // when not on iOS. iOS has special handling that creates a taller caret.
+        // TODO(garyq): See the TODO for _computeCaretPrototype().
+        caretRect = Rect.fromLTWH(
+          caretRect.left,
+          caretRect.top - _kCaretHeightOffset,
+          caretRect.width,
+          caretHeight,
+        );
+    }
+
+    caretRect = caretRect.shift(_paintOffset);
+    return caretRect.shift(_snapToPhysicalPixel(caretRect.topLeft));
+  }
 }
