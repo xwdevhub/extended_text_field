@@ -304,7 +304,8 @@ class ExtendedEditableTextState extends _EditableTextState {
     if (data == null) {
       text = '';
     } else {
-      text = data.text;
+      text =
+          data.text?.replaceAllMapped(RegExp(r'(?<!\\)\r\n'), (match) => '\n');
     }
 
     /// 过滤粘贴板上的文件
