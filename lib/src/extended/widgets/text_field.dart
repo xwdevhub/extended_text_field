@@ -94,6 +94,7 @@ class ExtendedTextField extends _TextField {
     super.restorationId,
     super.scribbleEnabled = true,
     super.enableIMEPersonalizedLearning = true,
+    super.magnifierConfiguration,
     // zmtzwqlp
     // super.contextMenuBuilder = _defaultContextMenuBuilder,
     this.extendedContextMenuBuilder = _defaultContextMenuBuilder,
