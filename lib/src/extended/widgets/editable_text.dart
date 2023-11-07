@@ -268,12 +268,12 @@ class ExtendedEditableTextState extends _EditableTextState {
       return;
     }
     final TextSelection selection = textEditingValue.selection;
-    final String text = textEditingValue.text;
+    // final String text = textEditingValue.text;
     _copyText(selection);
     if (selection.isCollapsed) {
       return;
     }
-    Clipboard.setData(ClipboardData(text: selection.textInside(text)));
+    // Clipboard.setData(ClipboardData(text: selection.textInside(text)));
     _replaceText(ReplaceTextIntent(textEditingValue, '', selection, cause));
     if (cause == SelectionChangedCause.toolbar) {
       // Schedule a call to bringIntoView() after renderEditable updates.
