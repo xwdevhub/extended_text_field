@@ -8,10 +8,10 @@ import 'dart:ui' as ui;
 import 'package:extended_text_field/src/extended/cupertino/spell_check_suggestions_toolbar.dart';
 import 'package:extended_text_field/src/extended/material/spell_check_suggestions_toolbar.dart';
 import 'package:extended_text_library/extended_text_library.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart' hide UndoHistory;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide UndoHistory;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -28,6 +28,7 @@ part 'package:extended_text_field/src/official/widgets/editable_text.dart';
 part 'package:extended_text_field/src/official/widgets/text_field.dart';
 part 'package:extended_text_field/src/official/widgets/text_selection.dart';
 part 'package:extended_text_field/src/official/widgets/spell_check.dart';
+part 'package:extended_text_field/src/official/widgets/undo_history.dart';
 part 'package:extended_text_field/src/official/material/selectable_text.dart';
 
 class ExtendedTextField extends _TextField {

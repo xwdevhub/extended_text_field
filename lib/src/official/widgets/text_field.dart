@@ -1592,7 +1592,7 @@ class _TextFieldState extends State<_TextField>
           showSelectionHandles: _showSelectionHandles,
           controller: controller,
           focusNode: focusNode,
-          undoController: widget.undoController,
+          // undoController: widget.undoController,
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction,
           textCapitalization: widget.textCapitalization,
