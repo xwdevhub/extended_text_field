@@ -220,7 +220,7 @@ class _TextField extends StatefulWidget {
       'Use `contextMenuBuilder` instead. '
       'This feature was deprecated after v3.3.0-0.5.pre.',
     )
-        this.toolbarOptions,
+    this.toolbarOptions,
     this.showCursor,
     this.autofocus = false,
     this.obscuringCharacter = '•',
@@ -1461,7 +1461,7 @@ class _TextFieldState extends State<_TextField>
           showSelectionHandles: _showSelectionHandles,
           controller: controller,
           focusNode: focusNode,
-          undoController: widget.undoController,
+          // undoController: widget.undoController,
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction,
           textCapitalization: widget.textCapitalization,
