@@ -361,6 +361,7 @@ class ExtendedEditableTextState extends _EditableTextState {
     int index = 0;
     bool isText = false;
     bool isImage = false;
+    bool isFile =false;
     renderEditable.text!.visitChildren((InlineSpan ts) {
       if (ts is SpecialInlineSpanBase) {
         final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
@@ -381,7 +382,17 @@ class ExtendedEditableTextState extends _EditableTextState {
             index++;
             selectLength += ts.actualText.length;
             return true;
-          } else if (ts is ExtendedWidgetSpan) {
+          } else if(ts is FileSpan){
+            if (ts.actualText.contains("[file:")) {
+              isFile = true;
+            } else {
+              isText = true;
+            }
+            map[index] = ts.actualText.trim();
+            index++;
+            selectLength += ts.actualText.length;
+            return true;
+          }else if (ts is ExtendedWidgetSpan) {
             if (ts.child is Text) {
               isText = true;
               Text text = ts.child as Text;
@@ -428,7 +439,7 @@ class ExtendedEditableTextState extends _EditableTextState {
       }
       return true;
     });
-    if (isText && isImage) {
+    if ((isText||isFile) && isImage) {
       String copyHtml5 = "";
       map.forEach((key, value) {
         String text = value as String;
@@ -456,6 +467,13 @@ class ExtendedEditableTextState extends _EditableTextState {
           text += value;
         });
         Clipboard.setData(ClipboardData(text: text));
+      }else if(isFile){
+        List<String> list = [];
+        map.forEach((key, value) {
+          list.add(
+              (value as String).replaceAll("[file:", "").replaceAll(" ]", ""));
+        });
+        Pasteboard.writeFiles(list);
       }
       if (isImage) {
         List<String> list = [];
