@@ -106,10 +106,11 @@ class ExtendedTextField extends _TextField {
     this.specialTextSpanBuilder,
     this.pasteTextIntercept,
     this.offsetFunction,
+    this.tool,
   });
   final VoidCallback? pasteTextIntercept;
   final Function(Offset)? offsetFunction;
-
+  final ValueNotifier<TapUpDetails?>? tool;
   /// build your ccustom text span
   final SpecialTextSpanBuilder? specialTextSpanBuilder;
 
@@ -600,9 +601,39 @@ class ExtendedTextFieldState extends _TextFieldState {
       ),
     );
   }
+  @override
+  void initState() {
+    super.initState();
+    extenedTextField.tool?.addListener(toggleToolbar);
+  }
 
+  @override
+  void dispose() {
+    extenedTextField.tool?.removeListener(toggleToolbar);
+    super.dispose();
+  }
+  @override
+  void didUpdateWidget(ExtendedTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (extenedTextField.tool != oldWidget.tool) {
+      (oldWidget.tool)?.removeListener(toggleToolbar);
+      (extenedTextField.tool)?.addListener(toggleToolbar);
+    }
+  }
   void bringIntoView(TextPosition position, {double offset = 0}) {
     (_editableText as ExtendedEditableTextState?)
         ?.bringIntoView(position, offset: offset);
+  }
+  void toggleToolbar() {
+    TapUpDetails? tap =extenedTextField.tool?.value??null;
+    if (tap != null) {
+      _editableText?.renderEditable.handleSecondaryTapDown(
+          TapDownDetails(globalPosition: tap.globalPosition));
+      bool isShow =_editableText?.showToolbar()??false;
+      if(!isShow){
+        _editableText?.toggleToolbar();
+      }
+    }
   }
 }
