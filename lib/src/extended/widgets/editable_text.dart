@@ -607,8 +607,8 @@ class ExtendedEditableTextState extends _EditableTextState {
                                             .misspelledSelectionColor ??
                                         widget.selectionColor
                                     : widget.selectionColor,
-                            textScaleFactor: widget.textScaleFactor ??
-                                MediaQuery.textScaleFactorOf(context),
+                            textScaler: widget.textScaler ??
+                                MediaQuery.textScalerOf(context),
                             textAlign: widget.textAlign,
                             textDirection: _textDirection,
                             locale: widget.locale,
@@ -1053,10 +1053,10 @@ class ExtendedEditableTextState extends _EditableTextState {
                 offset: renderEditable.selection!.baseOffset,
                 affinity: renderEditable.selection!.affinity);
 
-        _startCaretRect =
-            renderEditable.getLocalRectForCaret(currentTextPosition);
+        _startCaretCenter =
+            renderEditable.getLocalRectForCaret(currentTextPosition).center;
 
-        _lastBoundedOffset = _startCaretRect!.center - _floatingCursorOffset;
+        _lastBoundedOffset = _startCaretCenter! - _floatingCursorOffset;
         _lastTextPosition = currentTextPosition;
         renderEditable.setFloatingCursor(
             point.state, _lastBoundedOffset!, _lastTextPosition!);
@@ -1064,7 +1064,7 @@ class ExtendedEditableTextState extends _EditableTextState {
       case FloatingCursorDragState.Update:
         final Offset centeredPoint = point.offset! - _pointOffsetOrigin!;
         final Offset rawCursorOffset =
-            _startCaretRect!.center + centeredPoint - _floatingCursorOffset;
+            _startCaretCenter! + centeredPoint - _floatingCursorOffset;
 
         _lastBoundedOffset = renderEditable
             .calculateBoundedFloatingCursorOffset(rawCursorOffset);
@@ -1214,10 +1214,10 @@ class _ExtendedEditable extends _Editable {
     required super.expands,
     super.strutStyle,
     super.selectionColor,
-    required super.textScaleFactor,
     required super.textAlign,
     required super.textDirection,
     super.locale,
+    required super.textScaler,
     required super.obscuringCharacter,
     required super.obscureText,
     required super.offset,
@@ -1259,7 +1259,7 @@ class _ExtendedEditable extends _Editable {
       expands: expands,
       strutStyle: strutStyle,
       selectionColor: selectionColor,
-      textScaleFactor: textScaleFactor,
+      textScaler: textScaler,
       textAlign: textAlign,
       textDirection: textDirection,
       locale: locale ?? Localizations.maybeLocaleOf(context),

@@ -18,6 +18,7 @@ class ExtendedRenderEditable extends _RenderEditable {
     super.strutStyle,
     super.selectionColor,
     super.textScaleFactor = 1.0,
+    super.textScaler = TextScaler.noScaling,
     super.selection,
     required super.offset,
     super.ignorePointer = false,
@@ -110,7 +111,7 @@ class ExtendedRenderEditable extends _RenderEditable {
       {required Offset from,
       Offset? to,
       required SelectionChangedCause cause}) {
-    _layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
+    _computeTextMetricsIfNeeded();
     TextPosition fromPosition =
         _textPainter.getPositionForOffset(globalToLocal(from - _paintOffset));
     TextPosition? toPosition = to == null
