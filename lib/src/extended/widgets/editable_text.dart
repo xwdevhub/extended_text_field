@@ -1277,6 +1277,7 @@ class _ExtendedEditable extends _Editable {
     required super.textAlign,
     required super.textDirection,
     super.locale,
+    required super.textScaler,
     required super.obscuringCharacter,
     required super.obscureText,
     required super.offset,
