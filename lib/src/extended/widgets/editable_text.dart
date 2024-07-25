@@ -454,13 +454,20 @@ class ExtendedEditableTextState extends _EditableTextState {
         }
       });
 
-      RichClipboard.setData(RichClipboardData(
-        html: "<html>"
-            "<body>"
-            '$copyHtml5'
-            '</body>'
-            "</html>",
-      ));
+      FlutterClipboard.copy("<html>"
+                 "<body>"
+                '$copyHtml5'
+                '</body>'
+                 "</html>").then(( value ) =>
+          print('copied'));
+
+      // RichClipboard.setData(RichClipboardData(
+      //   html: "<html>"
+      //       "<body>"
+      //       '$copyHtml5'
+      //       '</body>'
+      //       "</html>",
+      // ));
     } else {
       if (isText) {
         String text = "";
