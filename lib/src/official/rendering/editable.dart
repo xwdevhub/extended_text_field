@@ -18,13 +18,6 @@ const Radius _kFloatingCursorRadius = Radius.circular(1.0);
 const double _kShortestDistanceSquaredWithFloatingAndRegularCursors =
     15.0 * 15.0;
 
-// This constant represents the shortest squared distance required between the floating cursor
-// and the regular cursor when both are present in the text field.
-// If the squared distance between the two cursors is less than this value,
-// it's not necessary to display both cursors at the same time.
-// This behavior is consistent with the one observed in iOS UITextField.
-const double _kShortestDistanceSquaredWithFloatingAndRegularCursors = 15.0 * 15.0;
-
 /// The consecutive sequence of [TextPosition]s that the caret should move to
 /// when the user navigates the paragraph using the upward arrow key or the
 /// downward arrow key.

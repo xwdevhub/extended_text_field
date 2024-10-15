@@ -1968,14 +1968,6 @@ class _TextSelectionGestureDetectorBuilder {
     return scrollableState?.axisDirection;
   }
 
-  AxisDirection? get _scrollDirection {
-    final ScrollableState? scrollableState =
-        delegate.editableTextKey.currentContext == null
-            ? null
-            : Scrollable.maybeOf(delegate.editableTextKey.currentContext!);
-    return scrollableState?.axisDirection;
-  }
-
   // For a shift + tap + drag gesture, the TextSelection at the point of the
   // tap. Mac uses this value to reset to the original selection when an
   // inversion of the base and offset happens.

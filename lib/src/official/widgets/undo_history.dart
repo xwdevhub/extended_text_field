@@ -24,6 +24,7 @@ class UndoHistory<T> extends StatefulWidget {
     required this.value,
     required this.onTriggered,
     required this.focusNode,
+    this.undoStackModifier,
     this.controller,
     required this.child,
   });
@@ -34,6 +35,14 @@ class UndoHistory<T> extends StatefulWidget {
   /// Called when checking whether a value change should be pushed onto
   /// the undo stack.
   final bool Function(T? oldValue, T newValue)? shouldChangeUndoStack;
+
+  /// Called right before a new entry is pushed to the undo stack.
+  ///
+  /// The value returned from this method will be pushed to the stack instead
+  /// of the original value.
+  ///
+  /// If null then the original value will always be pushed to the stack.
+  final T Function(T value)? undoStackModifier;
 
   /// Called when an undo or redo causes a state change.
   ///
@@ -88,12 +97,11 @@ class UndoHistoryState<T> extends State<UndoHistory<T>> with UndoManagerClient {
 
   UndoHistoryController? _controller;
 
-  UndoHistoryController get _effectiveController =>
-      widget.controller ?? (_controller ??= UndoHistoryController());
+  UndoHistoryController get _effectiveController => widget.controller ?? (_controller ??= UndoHistoryController());
 
   @override
   void undo() {
-    if (_stack.currentValue == null) {
+    if (_stack.currentValue == null)  {
       // Returns early if there is not a first value registered in the history.
       // This is important because, if an undo is received while the initial
       // value is being pushed (a.k.a when the field gets the focus but the
@@ -115,6 +123,7 @@ class UndoHistoryState<T> extends State<UndoHistory<T>> with UndoManagerClient {
     _updateState();
   }
 
+  //  xanway add
   void clear() {
     _stack.clear();
   }
@@ -126,8 +135,7 @@ class UndoHistoryState<T> extends State<UndoHistory<T>> with UndoManagerClient {
   bool get canRedo => _stack.canRedo;
 
   void _updateState() {
-    _effectiveController.value =
-        UndoHistoryValue(canUndo: canUndo, canRedo: canRedo);
+    _effectiveController.value = UndoHistoryValue(canUndo: canUndo, canRedo: canRedo);
 
     if (defaultTargetPlatform != TargetPlatform.iOS) {
       return;
@@ -172,18 +180,26 @@ class UndoHistoryState<T> extends State<UndoHistory<T>> with UndoManagerClient {
       return;
     }
 
-    if (!(widget.shouldChangeUndoStack?.call(_lastValue, widget.value.value) ??
-        true)) {
+    if (!(widget.shouldChangeUndoStack?.call(_lastValue, widget.value.value) ?? true)) {
       return;
     }
 
-    _lastValue = widget.value.value;
+    final T nextValue = widget.undoStackModifier?.call(widget.value.value) ?? widget.value.value;
+    if (nextValue == _lastValue) {
+      return;
+    }
 
-    _throttleTimer = _throttledPush(widget.value.value);
+    _lastValue = nextValue;
+
+    _throttleTimer = _throttledPush(nextValue);
   }
 
   void _handleFocus() {
     if (!widget.focusNode.hasFocus) {
+      if (UndoManager.client == this) {
+        UndoManager.client = null;
+      }
+
       return;
     }
     UndoManager.client = this;
@@ -223,7 +239,9 @@ class UndoHistoryState<T> extends State<UndoHistory<T>> with UndoManagerClient {
   void didUpdateWidget(UndoHistory<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.value != oldWidget.value) {
+      // xanway add
       _stack.clear();
+
       oldWidget.value.removeListener(_push);
       widget.value.addListener(_push);
     }
@@ -234,22 +252,31 @@ class UndoHistoryState<T> extends State<UndoHistory<T>> with UndoManagerClient {
     if (widget.controller != oldWidget.controller) {
       _effectiveController.onUndo.removeListener(undo);
       _effectiveController.onRedo.removeListener(redo);
+      // xanway add
       _effectiveController.onClear.removeListener(clear);
+
       _controller?.dispose();
       _controller = null;
       _effectiveController.onUndo.addListener(undo);
       _effectiveController.onRedo.addListener(redo);
+      // xanway add
       _effectiveController.onClear.addListener(clear);
     }
   }
 
   @override
   void dispose() {
+    if (UndoManager.client == this) {
+      UndoManager.client = null;
+    }
+
     widget.value.removeListener(_push);
     widget.focusNode.removeListener(_handleFocus);
     _effectiveController.onUndo.removeListener(undo);
     _effectiveController.onRedo.removeListener(redo);
+    // xanway add
     _effectiveController.onClear.removeListener(clear);
+    
     _controller?.dispose();
     _throttleTimer?.cancel();
     super.dispose();
@@ -259,14 +286,8 @@ class UndoHistoryState<T> extends State<UndoHistory<T>> with UndoManagerClient {
   Widget build(BuildContext context) {
     return Actions(
       actions: <Type, Action<Intent>>{
-        UndoTextIntent: Action<UndoTextIntent>.overridable(
-            context: context,
-            defaultAction:
-                CallbackAction<UndoTextIntent>(onInvoke: _undoFromIntent)),
-        RedoTextIntent: Action<RedoTextIntent>.overridable(
-            context: context,
-            defaultAction:
-                CallbackAction<RedoTextIntent>(onInvoke: _redoFromIntent)),
+        UndoTextIntent: Action<UndoTextIntent>.overridable(context: context, defaultAction: CallbackAction<UndoTextIntent>(onInvoke: _undoFromIntent)),
+        RedoTextIntent: Action<RedoTextIntent>.overridable(context: context, defaultAction: CallbackAction<RedoTextIntent>(onInvoke: _redoFromIntent)),
       },
       child: widget.child,
     );
@@ -292,24 +313,21 @@ class UndoHistoryValue {
   final bool canRedo;
 
   @override
-  String toString() =>
-      '${objectRuntimeType(this, 'UndoHistoryValue')}(canUndo: $canUndo, canRedo: $canRedo)';
+  String toString() => '${objectRuntimeType(this, 'UndoHistoryValue')}(canUndo: $canUndo, canRedo: $canRedo)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) {
       return true;
     }
-    return other is UndoHistoryValue &&
-        other.canUndo == canUndo &&
-        other.canRedo == canRedo;
+    return other is UndoHistoryValue && other.canUndo == canUndo && other.canRedo == canRedo;
   }
 
   @override
   int get hashCode => Object.hash(
-        canUndo.hashCode,
-        canRedo.hashCode,
-      );
+    canUndo.hashCode,
+    canRedo.hashCode,
+  );
 }
 
 /// A controller for the undo history, for example for an editable text field.
@@ -335,8 +353,7 @@ class UndoHistoryValue {
 ///   control of the underlying history using an [UndoHistoryController].
 class UndoHistoryController extends ValueNotifier<UndoHistoryValue> {
   /// Creates a controller for an [UndoHistory] widget.
-  UndoHistoryController({UndoHistoryValue? value})
-      : super(value ?? UndoHistoryValue.empty);
+  UndoHistoryController({UndoHistoryValue? value}) : super(value ?? UndoHistoryValue.empty);
 
   /// Notifies listeners that [undo] has been called.
   final ChangeNotifier onUndo = ChangeNotifier();
@@ -344,6 +361,7 @@ class UndoHistoryController extends ValueNotifier<UndoHistoryValue> {
   /// Notifies listeners that [redo] has been called.
   final ChangeNotifier onRedo = ChangeNotifier();
 
+  /// xanway add
   final ChangeNotifier onClear = ChangeNotifier();
 
   /// Reverts the value on the stack to the previous value.
@@ -364,6 +382,7 @@ class UndoHistoryController extends ValueNotifier<UndoHistoryValue> {
     onRedo.notifyListeners();
   }
 
+  // xanway add
   void clear() {
     onClear.notifyListeners();
   }
@@ -372,7 +391,9 @@ class UndoHistoryController extends ValueNotifier<UndoHistoryValue> {
   void dispose() {
     onUndo.dispose();
     onRedo.dispose();
+    // xanway add
     onClear.dispose();
+    
     super.dispose();
   }
 }

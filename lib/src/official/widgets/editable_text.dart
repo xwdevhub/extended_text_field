@@ -740,9 +740,6 @@ class _EditableText extends StatefulWidget {
   /// {@macro flutter.painting.textPainter.textScaler}
   final TextScaler? textScaler;
 
-  /// {@macro flutter.painting.textPainter.textScaler}
-  final TextScaler? textScaler;
-
   /// The color to use when painting the cursor.
   final Color cursorColor;
 
@@ -1980,17 +1977,11 @@ class _EditableTextState extends State<_EditableText>
 
   bool get _spellCheckResultsReceived => spellCheckEnabled && spellCheckResults != null && spellCheckResults!.suggestionSpans.isNotEmpty;
 
-  /// The text processing service used to retrieve the native text processing actions.
-  final ProcessTextService _processTextService = DefaultProcessTextService();
-
   /// The list of native text processing actions provided by the engine.
   final List<ProcessTextAction> _processTextActions = <ProcessTextAction>[];
 
   /// The text processing service used to retrieve the native text processing actions.
   final ProcessTextService _processTextService = DefaultProcessTextService();
-
-  /// The list of native text processing actions provided by the engine.
-  final List<ProcessTextAction> _processTextActions = <ProcessTextAction>[];
 
   /// Whether to create an input connection with the platform for text editing
   /// or not.
@@ -2077,43 +2068,6 @@ class _EditableTextState extends State<_EditableText>
         return textEditingValue.text.isNotEmpty
            && !(textEditingValue.selection.start == 0
                && textEditingValue.selection.end == textEditingValue.text.length);
-    }
-  }
-
-  @override
-  bool get lookUpEnabled {
-    if (defaultTargetPlatform != TargetPlatform.iOS) {
-      return false;
-    }
-    return !widget.obscureText
-        && !textEditingValue.selection.isCollapsed
-        && textEditingValue.selection.textInside(textEditingValue.text).trim() != '';
-  }
-
-  @override
-  bool get searchWebEnabled {
-    if (defaultTargetPlatform != TargetPlatform.iOS) {
-      return false;
-    }
-
-    return !widget.obscureText
-        && !textEditingValue.selection.isCollapsed
-        && textEditingValue.selection.textInside(textEditingValue.text).trim() != '';
-  }
-
-  @override
-  bool get shareEnabled {
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.android:
-      case TargetPlatform.iOS:
-        return !widget.obscureText
-            && !textEditingValue.selection.isCollapsed
-            && textEditingValue.selection.textInside(textEditingValue.text).trim() != '';
-      case TargetPlatform.macOS:
-      case TargetPlatform.fuchsia:
-      case TargetPlatform.linux:
-      case TargetPlatform.windows:
-        return false;
     }
   }
 
@@ -6091,12 +6045,6 @@ class _UpdateTextSelectionVerticallyAction<
       );
     }
 
-    final bool shouldMove = intent is ExtendSelectionVerticallyToAdjacentPageIntent
-      ? currentRun.moveByOffset((intent.forward ? 1.0 : -1.0) * state.renderEditable.size.height)
-      : intent.forward ? currentRun.moveNext() : currentRun.movePrevious();
-    final TextPosition newExtent = shouldMove
-      ? currentRun.current
-      : intent.forward ? TextPosition(offset: value.text.length) : const TextPosition(offset: 0);
     final TextSelection newSelection = collapseSelection
         ? TextSelection.fromPosition(newExtent)
         : value.selection.extendTo(newExtent);
@@ -6156,21 +6104,6 @@ class _CopySelectionAction extends ContextAction<CopySelectionTextIntent> {
   @override
   bool get isActionEnabled =>
       state._value.selection.isValid && !state._value.selection.isCollapsed;
-}
-
-/// A [ClipboardStatusNotifier] whose [value] is hardcoded to
-/// [ClipboardStatus.pasteable].
-///
-/// Useful to avoid showing a permission dialog on web, which happens when
-/// [Clipboard.hasStrings] is called.
-class _WebClipboardStatusNotifier extends ClipboardStatusNotifier {
-  @override
-  ClipboardStatus value = ClipboardStatus.pasteable;
-
-  @override
-  Future<void> update() {
-    return Future<void>.value();
-  }
 }
 
 /// A [ClipboardStatusNotifier] whose [value] is hardcoded to

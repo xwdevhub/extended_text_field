@@ -45,7 +45,8 @@ part 'package:extended_text_field/src/official/material/selectable_text.dart';
 class ExtendedTextField extends _TextField {
   const ExtendedTextField({
     super.key,
-    super.groupId = ExtendedEditableText,
+    // super.groupId = ExtendedEditableText,
+    super.groupId = EditableText, // xanway add
     super.controller,
     super.focusNode,
     super.undoController,
@@ -109,7 +110,6 @@ class ExtendedTextField extends _TextField {
     super.restorationId,
     super.scribbleEnabled = true,
     super.enableIMEPersonalizedLearning = true,
-    super.magnifierConfiguration,
     // zmtzwqlp
     // super.contextMenuBuilder = _defaultContextMenuBuilder,
     this.extendedContextMenuBuilder = _defaultContextMenuBuilder,

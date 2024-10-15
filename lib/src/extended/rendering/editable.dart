@@ -158,7 +158,6 @@ class ExtendedRenderEditable extends _RenderEditable {
 
   @override
   TextSelection getLineAtOffset(TextPosition position) {
-    debugAssertLayoutUpToDate();
     final TextPosition tempPosition = hasSpecialInlineSpanBase
         ? ExtendedTextLibraryUtils.convertTextInputPostionToTextPainterPostion(
             text!, position)
@@ -293,8 +292,7 @@ class ExtendedRenderEditable extends _RenderEditable {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
         final double fullHeight =
-            _textPainter.getFullHeightForCaret(caretPosition, caretPrototype) ??
-                _textPainter.preferredLineHeight;
+            _textPainter.getFullHeightForCaret(caretPosition, caretPrototype);
         final double heightDiff = fullHeight - caretRect.height;
         // Center the caret vertically along the text.
         caretRect = Rect.fromLTWH(

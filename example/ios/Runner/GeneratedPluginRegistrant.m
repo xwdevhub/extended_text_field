@@ -18,12 +18,6 @@
 @import path_provider_foundation;
 #endif
 
-#if __has_include(<rich_clipboard_ios/RichClipboardPlugin.h>)
-#import <rich_clipboard_ios/RichClipboardPlugin.h>
-#else
-@import rich_clipboard_ios;
-#endif
-
 #if __has_include(<url_launcher_ios/URLLauncherPlugin.h>)
 #import <url_launcher_ios/URLLauncherPlugin.h>
 #else
@@ -35,7 +29,6 @@
 + (void)registerWithRegistry:(NSObject<FlutterPluginRegistry>*)registry {
   [PasteboardPlugin registerWithRegistrar:[registry registrarForPlugin:@"PasteboardPlugin"]];
   [PathProviderPlugin registerWithRegistrar:[registry registrarForPlugin:@"PathProviderPlugin"]];
-  [RichClipboardPlugin registerWithRegistrar:[registry registrarForPlugin:@"RichClipboardPlugin"]];
   [URLLauncherPlugin registerWithRegistrar:[registry registrarForPlugin:@"URLLauncherPlugin"]];
 }
 

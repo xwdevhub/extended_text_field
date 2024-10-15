@@ -54,7 +54,8 @@ class ExtendedEditableText extends _EditableText {
     super.onAppPrivateCommand,
     super.onSelectionChanged,
     super.onSelectionHandleTapped,
-    super.groupId = ExtendedEditableText,
+    // super.groupId = ExtendedEditableText,
+    super.groupId = EditableText, // xanway add
     super.onTapOutside,
     super.inputFormatters,
     super.mouseCursor,
@@ -99,7 +100,7 @@ class ExtendedEditableText extends _EditableText {
   });
 
   final Function? pasteTextIntercept;
-  Function(Offset)? offsetFunction;
+  final Function(Offset)? offsetFunction;
 
   /// build your ccustom text span
   final SpecialTextSpanBuilder? specialTextSpanBuilder;
@@ -1284,7 +1285,6 @@ class _ExtendedEditable extends _Editable {
     required super.textAlign,
     required super.textDirection,
     super.locale,
-    required super.textScaler,
     required super.obscuringCharacter,
     required super.obscureText,
     required super.offset,
