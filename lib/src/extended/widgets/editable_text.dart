@@ -455,13 +455,6 @@ class ExtendedEditableTextState extends _EditableTextState {
         }
       });
 
-      FlutterClipboard.copy("<html>"
-                 "<body>"
-                '$copyHtml5'
-                '</body>'
-                 "</html>").then(( value ) =>
-          print('copied'));
-
       // RichClipboard.setData(RichClipboardData(
       //   html: "<html>"
       //       "<body>"
@@ -469,6 +462,11 @@ class ExtendedEditableTextState extends _EditableTextState {
       //       '</body>'
       //       "</html>",
       // ));
+
+      final SystemClipboard clipboard = SystemClipboard.instance!;
+      final DataWriterItem item = DataWriterItem();
+      item.add(Formats.htmlText('<html><body>$copyHtml5</body></html>'));
+      clipboard.write(<DataWriterItem>[item]);
     } else {
       if (isText) {
         String text = "";
