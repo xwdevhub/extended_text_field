@@ -666,7 +666,6 @@ class _SelectableTextState extends State<_SelectableText>
         cursorRadius ??= const Radius.circular(2.0);
         cursorOffset = Offset(
             iOSHorizontalOffset / MediaQuery.devicePixelRatioOf(context), 0);
-
       case TargetPlatform.macOS:
         final CupertinoThemeData cupertinoTheme = CupertinoTheme.of(context);
         forcePressEnabled = false;
@@ -681,7 +680,6 @@ class _SelectableTextState extends State<_SelectableText>
         cursorRadius ??= const Radius.circular(2.0);
         cursorOffset = Offset(
             iOSHorizontalOffset / MediaQuery.devicePixelRatioOf(context), 0);
-
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
         forcePressEnabled = false;
@@ -693,7 +691,6 @@ class _SelectableTextState extends State<_SelectableText>
             theme.colorScheme.primary;
         selectionColor = selectionStyle.selectionColor ??
             theme.colorScheme.primary.withOpacity(0.40);
-
       case TargetPlatform.linux:
       case TargetPlatform.windows:
         forcePressEnabled = false;

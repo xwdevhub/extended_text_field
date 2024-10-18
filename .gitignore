@@ -12,3 +12,15 @@ example/ios/Flutter/flutter_export_environment.sh
 .vscode/settings.json
 /pubspec.lock
 example/.flutter-plugins-dependencies
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+example/windows/flutter/ephemeral

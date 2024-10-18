@@ -1478,7 +1478,6 @@ class _TextFieldState extends State<_TextField>
         cursorOffset = Offset(
             iOSHorizontalOffset / MediaQuery.devicePixelRatioOf(context), 0);
         autocorrectionTextRectColor = selectionColor;
-
       case TargetPlatform.macOS:
         final CupertinoThemeData cupertinoTheme = CupertinoTheme.of(context);
         forcePressEnabled = false;
@@ -1578,7 +1577,7 @@ class _TextFieldState extends State<_TextField>
           showSelectionHandles: _showSelectionHandles,
           controller: controller,
           focusNode: focusNode,
-          undoController: widget.undoController,
+          // undoController: widget.undoController,
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction,
           textCapitalization: widget.textCapitalization,
