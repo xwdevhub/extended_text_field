@@ -6,6 +6,7 @@ issue_tracker: https://github.com/fluttercandies/extended_text_field/issues
 topics:
   - extended-text-field
   - rich-text
+pulblish_to: 'none'
 
 environment:
   sdk: '>=3.5.0 <4.0.0'
@@ -13,6 +14,11 @@ environment:
 dependencies:
 
   extended_text_library: ^12.0.0
+  pasteboard:
+    git:
+      url: https://github.com/xwdevhub/flutter-plugins.git
+      path: packages/pasteboard
+  super_clipboard: ^0.8.24
   # extended_text_library:  
   #   version: ^11.0.0-dev.1
   #   hosted: "https://pub.dev"
@@ -23,11 +29,9 @@ dev_dependencies:
     sdk: flutter
 
 dependency_overrides:
-  #extended_text_library:
-    # git: 
-    #   url: https://github.com/fluttercandies/extended_text_library.git
-    #   ref: refactor
-    #path: ../extended_text_library
+  extended_text_library:
+    git: https://github.com/xwdevhub/extended_text_library.git
+    
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
 

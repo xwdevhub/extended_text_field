@@ -1689,11 +1689,8 @@ class _RenderEditable extends RenderBox
 
     final Offset paintOffset = _paintOffset;
 
-    final List<ui.TextBox> boxes = selection.isCollapsed
-        ? <ui.TextBox>[]
-        : _textPainter.getBoxesForSelection(selection,
-            boxHeightStyle: selectionHeightStyle,
-            boxWidthStyle: selectionWidthStyle);
+    final List<ui.TextBox> boxes = selection.isCollapsed ?
+        <ui.TextBox>[] : _textPainter.getBoxesForSelection(selection, boxHeightStyle: selectionHeightStyle, boxWidthStyle: selectionWidthStyle);
     if (boxes.isEmpty) {
       // TODO(mpcomplete): This doesn't work well at an RTL/LTR boundary.
       final Offset caretOffset =
@@ -2174,8 +2171,9 @@ class _RenderEditable extends RenderBox
   TextSelection getWordAtOffset(TextPosition position) {
     // When long-pressing past the end of the text, we want a collapsed cursor.
     if (position.offset >= plainText.length) {
-      return TextSelection.fromPosition(TextPosition(
-          offset: plainText.length, affinity: TextAffinity.upstream));
+      return TextSelection.fromPosition(
+        TextPosition(offset: plainText.length, affinity: TextAffinity.upstream)
+      );
     }
     // If text is obscured, the entire sentence should be treated as one word.
     if (obscureText) {
@@ -2679,12 +2677,10 @@ class _RenderEditable extends RenderBox
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
     super.debugFillProperties(properties);
     properties.add(ColorProperty('cursorColor', cursorColor));
-    properties.add(
-        DiagnosticsProperty<ValueNotifier<bool>>('showCursor', showCursor));
+    properties.add(DiagnosticsProperty<ValueNotifier<bool>>('showCursor', showCursor));
     properties.add(IntProperty('maxLines', maxLines));
     properties.add(IntProperty('minLines', minLines));
-    properties.add(
-        DiagnosticsProperty<bool>('expands', expands, defaultValue: false));
+    properties.add(DiagnosticsProperty<bool>('expands', expands, defaultValue: false));
     properties.add(ColorProperty('selectionColor', selectionColor));
     properties.add(DiagnosticsProperty<TextScaler>('textScaler', textScaler,
         defaultValue: TextScaler.noScaling));
@@ -2709,8 +2705,8 @@ class _RenderEditable extends RenderBox
 class _RenderEditableCustomPaint extends RenderBox {
   _RenderEditableCustomPaint({
     RenderEditablePainter? painter,
-  })  : _painter = painter,
-        super();
+  }) : _painter = painter,
+       super();
 
   // zmtzawqlp
   @override
@@ -2898,8 +2894,8 @@ class _TextHighlightPainter extends RenderEditablePainter {
 
     for (final TextBox box in boxes) {
       canvas.drawRect(
-        box.toRect().shift(renderEditable._paintOffset).intersect(
-            Rect.fromLTWH(0, 0, textPainter.width, textPainter.height)),
+        box.toRect().shift(renderEditable._paintOffset)
+          .intersect(Rect.fromLTWH(0, 0, textPainter.width, textPainter.height)),
         highlightPaint,
       );
     }

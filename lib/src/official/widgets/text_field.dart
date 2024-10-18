@@ -829,6 +829,7 @@ class _TextField extends StatefulWidget {
   ///    mark misspelled words with.
   ///  * [CupertinoTextField.cupertinoMisspelledTextStyle], the style configured
   ///    to mark misspelled words with in the Cupertino style.
+  // ignore: unused_field
   static const TextStyle materialMisspelledTextStyle = TextStyle(
     decoration: TextDecoration.underline,
     decorationColor: Colors.red,
@@ -1492,7 +1493,6 @@ class _TextFieldState extends State<_TextField>
         cursorOffset = Offset(
             iOSHorizontalOffset / MediaQuery.devicePixelRatioOf(context), 0);
         autocorrectionTextRectColor = selectionColor;
-
       case TargetPlatform.macOS:
         final CupertinoThemeData cupertinoTheme = CupertinoTheme.of(context);
         forcePressEnabled = false;
@@ -1592,7 +1592,7 @@ class _TextFieldState extends State<_TextField>
           showSelectionHandles: _showSelectionHandles,
           controller: controller,
           focusNode: focusNode,
-          undoController: widget.undoController,
+          // undoController: widget.undoController,
           keyboardType: widget.keyboardType,
           textInputAction: widget.textInputAction,
           textCapitalization: widget.textCapitalization,

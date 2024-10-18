@@ -157,6 +157,33 @@ class ExtendedRenderEditable extends _RenderEditable {
   }
 
   @override
+  TextSelection getLineAtOffset(TextPosition position) {
+    final TextPosition tempPosition = hasSpecialInlineSpanBase
+        ? ExtendedTextLibraryUtils.convertTextInputPostionToTextPainterPostion(
+            text!, position)
+        : position;
+
+    final TextRange line = _textPainter.getLineBoundary(tempPosition);
+    // If text is obscured, the entire string should be treated as one line.
+
+    late TextSelection newSelection;
+    if (obscureText) {
+      newSelection =
+          TextSelection(baseOffset: 0, extentOffset: plainText.length);
+    } else {
+      newSelection =
+          TextSelection(baseOffset: line.start, extentOffset: line.end);
+    }
+    newSelection = hasSpecialInlineSpanBase
+        ? ExtendedTextLibraryUtils
+            .convertTextPainterSelectionToTextInputSelection(
+                text!, newSelection)
+        : newSelection;
+
+    return newSelection;
+  }
+
+  @override
   List<TextSelectionPoint> getEndpointsForSelection(TextSelection selection) {
     // zmtzawqlp
     if (hasSpecialInlineSpanBase) {
@@ -184,6 +211,23 @@ class ExtendedRenderEditable extends _RenderEditable {
         getActualSelection(newRange: newRange);
   }
 
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    final InlineSpan? textSpan = _textPainter.text;
+    final Offset effectivePosition = position - _paintOffset;
+    if (textSpan != null) {
+      final TextPosition textPosition =
+          _textPainter.getPositionForOffset(effectivePosition);
+      final Object? span = textSpan.getSpanForPosition(textPosition);
+      if (span is HitTestTarget) {
+        result.add(HitTestEntry(span));
+        return true;
+      }
+    }
+    // return hitTestInlineChildren(result, position);
+    return hitTestInlineChildren(result, effectivePosition);
+  }
+
   TextSelection? getActualSelection({TextRange? newRange}) {
     TextSelection? value = selection;
     if (newRange != null) {
@@ -195,5 +239,84 @@ class ExtendedRenderEditable extends _RenderEditable {
         ? ExtendedTextLibraryUtils
             .convertTextInputSelectionToTextPainterSelection(text!, value!)
         : value;
+  }
+
+  /// Returns the [Rect] in local coordinates for the caret at the given text
+  /// position.
+  ///
+  /// See also:
+  ///
+  ///  * [getPositionForPoint], which is the reverse operation, taking
+  ///    an [Offset] in global coordinates and returning a [TextPosition].
+  ///  * [getEndpointsForSelection], which is the equivalent but for
+  ///    a selection rather than a particular text position.
+  ///  * [TextPainter.getOffsetForCaret], the equivalent method for a
+  ///    [TextPainter] object.
+  @override
+  Rect getLocalRectForCaret(TextPosition caretPosition) {
+    _computeTextMetricsIfNeeded();
+    final Rect caretPrototype = _caretPrototype;
+    Offset caretOffset =
+        _textPainter.getOffsetForCaret(caretPosition, caretPrototype);
+
+    if (caretOffset.dx == 0) {
+      var length = 0;
+      text?.visitChildren((InlineSpan ts) {
+        length += ExtendedTextLibraryUtils.getInlineOffset(ts);
+        if (length > caretPosition.offset) {
+          return false;
+        }
+        return true;
+      });
+      if (length == caretPosition.offset) {
+        caretOffset = ExtendedTextLibraryUtils.getCaretOffset(
+          caretPosition,
+          _textPainter,
+          hasSpecialInlineSpanBase,
+          boxHeightStyle: selectionHeightStyle,
+          boxWidthStyle: selectionWidthStyle,
+        );
+      }
+    }
+
+    Rect caretRect = caretPrototype.shift(caretOffset + cursorOffset);
+    final double scrollableWidth =
+        math.max(_textPainter.width + _caretMargin, size.width);
+
+    final double caretX = clampDouble(
+        caretRect.left, 0, math.max(scrollableWidth - _caretMargin, 0));
+    caretRect = Offset(caretX, caretRect.top) & caretRect.size;
+
+    final double caretHeight = cursorHeight;
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        final double fullHeight =
+            _textPainter.getFullHeightForCaret(caretPosition, caretPrototype);
+        final double heightDiff = fullHeight - caretRect.height;
+        // Center the caret vertically along the text.
+        caretRect = Rect.fromLTWH(
+          caretRect.left,
+          caretRect.top + heightDiff / 2,
+          caretRect.width,
+          caretRect.height,
+        );
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.windows:
+        // Override the height to take the full height of the glyph at the TextPosition
+        // when not on iOS. iOS has special handling that creates a taller caret.
+        // TODO(garyq): See the TODO for _computeCaretPrototype().
+        caretRect = Rect.fromLTWH(
+          caretRect.left,
+          caretRect.top - _kCaretHeightOffset,
+          caretRect.width,
+          caretHeight,
+        );
+    }
+
+    caretRect = caretRect.shift(_paintOffset);
+    return caretRect.shift(_snapToPhysicalPixel(caretRect.topLeft));
   }
 }
