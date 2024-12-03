@@ -918,11 +918,10 @@ class ExtendedEditableTextState extends _EditableTextState {
     if (supportSpecialText) {
       final bool textChanged = _value.text != value.text;
       final bool selectionChanged = _value.selection != value.selection;
-      if (textChanged) {
         final TextSpan newTextSpan = extendedEditableText
             .specialTextSpanBuilder!
             .build(value.text, textStyle: widget.style);
-
+      if (textChanged) {
         final TextSpan oldTextSpan = extendedEditableText
             .specialTextSpanBuilder!
             .build(_value.text, textStyle: widget.style);
@@ -940,12 +939,9 @@ class ExtendedEditableTextState extends _EditableTextState {
           );
         }
       } else if (selectionChanged) {
-        final InlineSpan inlineSpan =
-            (_editableKey.currentWidget as _ExtendedEditable).inlineSpan;
-
         value = ExtendedTextLibraryUtils.correctCaretOffset(
           value,
-          inlineSpan,
+          newTextSpan,
           _textInputConnection,
           oldValue: _value,
         );
