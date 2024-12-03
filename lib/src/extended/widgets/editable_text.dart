@@ -463,9 +463,9 @@ class ExtendedEditableTextState extends _EditableTextState {
       //       "</html>",
       // ));
 
-      final SystemClipboard clipboard = SystemClipboard.instance!;
-      final DataWriterItem item = DataWriterItem();
-      item.add(Formats.htmlText('<html><body>$copyHtml5</body></html>'));
+      // final SystemClipboard clipboard = SystemClipboard.instance!;
+      // final DataWriterItem item = DataWriterItem();
+      // item.add(Formats.htmlText('<html><body>$copyHtml5</body></html>'));
       // clipboard.write(<DataWriterItem>[item]);
     } else {
       if (isText) {
