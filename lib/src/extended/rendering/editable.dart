@@ -46,6 +46,7 @@ class ExtendedRenderEditable extends _RenderEditable {
     super.foregroundPainter,
     super.children,
     this.supportSpecialText = false,
+    super.offsetFunction,
   }) {
     _findSpecialInlineSpanBase(text);
   }
