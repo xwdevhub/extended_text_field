@@ -271,6 +271,7 @@ class _RenderEditable extends RenderBox
     RenderEditablePainter? painter,
     RenderEditablePainter? foregroundPainter,
     List<RenderBox>? children,
+    Function(Offset)? offsetFunction,
   })  : assert(maxLines == null || maxLines > 0),
         assert(minLines == null || minLines > 0),
         assert(
@@ -301,6 +302,7 @@ class _RenderEditable extends RenderBox
         _expands = expands,
         _selection = selection,
         _offset = offset,
+        _offsetFunction = offsetFunction,
         _cursorWidth = cursorWidth,
         _cursorHeight = cursorHeight,
         _paintCursorOnTop = paintCursorAboveText,
@@ -334,7 +336,7 @@ class _RenderEditable extends RenderBox
     _updatePainter(painter);
     addAll(children);
   }
-
+  Function(Offset)? _offsetFunction;
   /// Child render objects
   _RenderEditableCustomPaint? _foregroundRenderObject;
   _RenderEditableCustomPaint? _backgroundRenderObject;
@@ -431,7 +433,7 @@ class _RenderEditable extends RenderBox
 
   // Caret Painters:
   // A single painter for both the regular caret and the floating cursor.
-  late final _CaretPainter _caretPainter = _CaretPainter();
+  late final _CaretPainter _caretPainter = _CaretPainter(offSet: _offsetFunction);
 
   // Text Highlight painters:
   final _TextHighlightPainter _selectionPainter = _TextHighlightPainter();
@@ -2918,7 +2920,9 @@ class _TextHighlightPainter extends RenderEditablePainter {
 }
 
 class _CaretPainter extends RenderEditablePainter {
-  _CaretPainter();
+  _CaretPainter({this.offSet});
+
+  Function(Offset)? offSet;
 
   bool get shouldPaint => _shouldPaint;
   bool _shouldPaint = true;
@@ -2999,6 +3003,7 @@ class _CaretPainter extends RenderEditablePainter {
       Color caretColor, TextPosition textPosition) {
     final Rect integralRect = renderEditable.getLocalRectForCaret(textPosition);
     if (shouldPaint) {
+      offSet?.call(integralRect.center);
       if (floatingCursorRect != null) {
         final double distanceSquared =
             (floatingCursorRect!.center - integralRect.center).distanceSquared;

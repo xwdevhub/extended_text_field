@@ -1345,6 +1345,7 @@ class _ExtendedEditable extends _Editable {
       promptRectColor: promptRectColor,
       clipBehavior: clipBehavior,
       supportSpecialText: supportSpecialText,
+      offsetFunction: offsetFunction,
     );
   }
 
