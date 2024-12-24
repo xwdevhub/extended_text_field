@@ -463,17 +463,19 @@ class ExtendedEditableTextState extends _EditableTextState {
       //       "</html>",
       // ));
 
-      final SystemClipboard clipboard = SystemClipboard.instance!;
-      final DataWriterItem item = DataWriterItem();
-      item.add(Formats.htmlText('<html><body>$copyHtml5</body></html>'));
-      clipboard.write(<DataWriterItem>[item]);
+      // final SystemClipboard clipboard = SystemClipboard.instance!;
+      // final DataWriterItem item = DataWriterItem();
+      // item.add(Formats.htmlText('<html><body>$copyHtml5</body></html>'));
+      // clipboard.write(<DataWriterItem>[item]);
+      Pasteboard.writeHtml('<html><body>$copyHtml5</body></html>');
     } else {
       if (isText) {
         String text = "";
         map.forEach((key, value) {
           text += value;
         });
-        Clipboard.setData(ClipboardData(text: text));
+        Pasteboard.writeText(text);
+        // Clipboard.setData(ClipboardData(text: text));
       }else if(isFile){
         List<String> list = [];
         map.forEach((key, value) {
