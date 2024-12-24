@@ -16,31 +16,19 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:pasteboard/pasteboard.dart';
-import 'package:super_clipboard/super_clipboard.dart';
-
-part 'package:extended_text_field/src/extended/rendering/editable.dart';
-
-part 'package:extended_text_field/src/extended/widgets/editable_text.dart';
-
-part 'package:extended_text_field/src/extended/widgets/spell_check.dart';
-
-part 'package:extended_text_field/src/extended/widgets/text_selection.dart';
 
 part 'package:extended_text_field/src/extended/material/selectable_text.dart';
-
-part 'package:extended_text_field/src/official/rendering/editable.dart';
-
-part 'package:extended_text_field/src/official/widgets/editable_text.dart';
-
-part 'package:extended_text_field/src/official/widgets/text_field.dart';
-
-part 'package:extended_text_field/src/official/widgets/text_selection.dart';
-
-part 'package:extended_text_field/src/official/widgets/spell_check.dart';
-
-part 'package:extended_text_field/src/official/widgets/undo_history.dart';
-
+part 'package:extended_text_field/src/extended/rendering/editable.dart';
+part 'package:extended_text_field/src/extended/widgets/editable_text.dart';
+part 'package:extended_text_field/src/extended/widgets/spell_check.dart';
+part 'package:extended_text_field/src/extended/widgets/text_selection.dart';
 part 'package:extended_text_field/src/official/material/selectable_text.dart';
+part 'package:extended_text_field/src/official/rendering/editable.dart';
+part 'package:extended_text_field/src/official/widgets/editable_text.dart';
+part 'package:extended_text_field/src/official/widgets/spell_check.dart';
+part 'package:extended_text_field/src/official/widgets/text_field.dart';
+part 'package:extended_text_field/src/official/widgets/text_selection.dart';
+part 'package:extended_text_field/src/official/widgets/undo_history.dart';
 
 class ExtendedTextField extends _TextField {
   const ExtendedTextField({
@@ -62,8 +50,9 @@ class ExtendedTextField extends _TextField {
     super.readOnly = false,
     @Deprecated(
       'Use `contextMenuBuilder` instead. '
-          'This feature was deprecated after v3.3.0-0.5.pre.',
-    ) super.toolbarOptions,
+      'This feature was deprecated after v3.3.0-0.5.pre.',
+    )
+    super.toolbarOptions,
     super.showCursor,
     super.autofocus = false,
     super.statesController,
@@ -184,8 +173,8 @@ class ExtendedTextField extends _TextField {
 
   /// zmtzawqlp
   /// [AdaptiveTextSelectionToolbar.editableText]
-  static Widget _defaultContextMenuBuilder(BuildContext context,
-      ExtendedEditableTextState editableTextState) {
+  static Widget _defaultContextMenuBuilder(
+      BuildContext context, ExtendedEditableTextState editableTextState) {
     return AdaptiveTextSelectionToolbar.buttonItems(
       buttonItems: editableTextState.contextMenuButtonItems,
       anchors: editableTextState.contextMenuAnchors,
@@ -199,7 +188,8 @@ class ExtendedTextField extends _TextField {
   /// had any missing values replaced with their defaults for the Android
   /// platform.
   static ExtendedSpellCheckConfiguration inferAndroidSpellCheckConfiguration(
-      ExtendedSpellCheckConfiguration? configuration,) {
+    ExtendedSpellCheckConfiguration? configuration,
+  ) {
     if (configuration == null ||
         configuration == const ExtendedSpellCheckConfiguration.disabled()) {
       return const ExtendedSpellCheckConfiguration.disabled();
@@ -208,8 +198,8 @@ class ExtendedTextField extends _TextField {
       misspelledTextStyle: configuration.misspelledTextStyle ??
           TextField.materialMisspelledTextStyle,
       extendedSpellCheckSuggestionsToolbarBuilder:
-      configuration.extendedSpellCheckSuggestionsToolbarBuilder ??
-          ExtendedTextField.defaultSpellCheckSuggestionsToolbarBuilder,
+          configuration.extendedSpellCheckSuggestionsToolbarBuilder ??
+              ExtendedTextField.defaultSpellCheckSuggestionsToolbarBuilder,
       // spellCheckSuggestionsToolbarBuilder:
       //     configuration.spellCheckSuggestionsToolbarBuilder ??
       //         TextField.defaultSpellCheckSuggestionsToolbarBuilder,
@@ -230,8 +220,10 @@ class ExtendedTextField extends _TextField {
   ///    is like this but specifies the default for [CupertinoTextField].
   /// [TextField.defaultSpellCheckSuggestionsToolbarBuilder]
   @visibleForTesting
-  static Widget defaultSpellCheckSuggestionsToolbarBuilder(BuildContext context,
-      ExtendedEditableTextState editableTextState,) {
+  static Widget defaultSpellCheckSuggestionsToolbarBuilder(
+    BuildContext context,
+    ExtendedEditableTextState editableTextState,
+  ) {
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
@@ -251,7 +243,8 @@ class ExtendedTextField extends _TextField {
   /// Returns a new [SpellCheckConfiguration] where the given configuration has
   /// had any missing values replaced with their defaults for the iOS platform.
   static ExtendedSpellCheckConfiguration inferIOSSpellCheckConfiguration(
-      ExtendedSpellCheckConfiguration? configuration,) {
+    ExtendedSpellCheckConfiguration? configuration,
+  ) {
     if (configuration == null ||
         configuration == const ExtendedSpellCheckConfiguration.disabled()) {
       return const ExtendedSpellCheckConfiguration.disabled();
@@ -264,8 +257,8 @@ class ExtendedTextField extends _TextField {
           // ignore: invalid_use_of_visible_for_testing_member
           CupertinoTextField.kMisspelledSelectionColor,
       extendedSpellCheckSuggestionsToolbarBuilder:
-      configuration.extendedSpellCheckSuggestionsToolbarBuilder ??
-          defaultIosSpellCheckSuggestionsToolbarBuilder,
+          configuration.extendedSpellCheckSuggestionsToolbarBuilder ??
+              defaultIosSpellCheckSuggestionsToolbarBuilder,
       // spellCheckSuggestionsToolbarBuilder:
       //   configuration.spellCheckSuggestionsToolbarBuilder
       //     ?? CupertinoTextField.defaultSpellCheckSuggestionsToolbarBuilder,
@@ -285,8 +278,9 @@ class ExtendedTextField extends _TextField {
   /// [CupertinoTextField.defaultSpellCheckSuggestionsToolbarBuilder]
   @visibleForTesting
   static Widget defaultIosSpellCheckSuggestionsToolbarBuilder(
-      BuildContext context,
-      ExtendedEditableTextState editableTextState,) {
+    BuildContext context,
+    ExtendedEditableTextState editableTextState,
+  ) {
     return ExtendedCupertinoSpellCheckSuggestionsToolbar.editableText(
       editableTextState: editableTextState,
     );
@@ -344,7 +338,7 @@ class ExtendedTextFieldState extends _TextFieldState {
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
-      // zmtzawqlp
+        // zmtzawqlp
         spellCheckConfiguration =
             ExtendedTextField.inferIOSSpellCheckConfiguration(
           extenedTextField.extendedSpellCheckConfiguration,
@@ -353,7 +347,7 @@ class ExtendedTextFieldState extends _TextFieldState {
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
-      // zmtzawqlp
+        // zmtzawqlp
         spellCheckConfiguration =
             ExtendedTextField.inferAndroidSpellCheckConfiguration(
           extenedTextField.extendedSpellCheckConfiguration,
@@ -381,8 +375,8 @@ class ExtendedTextFieldState extends _TextFieldState {
         cursorColor = _hasError
             ? _errorColor
             : widget.cursorColor ??
-            selectionStyle.cursorColor ??
-            cupertinoTheme.primaryColor;
+                selectionStyle.cursorColor ??
+                cupertinoTheme.primaryColor;
         selectionColor = selectionStyle.selectionColor ??
             cupertinoTheme.primaryColor.withOpacity(0.40);
         cursorRadius ??= const Radius.circular(2.0);
@@ -398,8 +392,8 @@ class ExtendedTextFieldState extends _TextFieldState {
         cursorColor = _hasError
             ? _errorColor
             : widget.cursorColor ??
-            selectionStyle.cursorColor ??
-            cupertinoTheme.primaryColor;
+                selectionStyle.cursorColor ??
+                cupertinoTheme.primaryColor;
         selectionColor = selectionStyle.selectionColor ??
             cupertinoTheme.primaryColor.withOpacity(0.40);
         cursorRadius ??= const Radius.circular(2.0);
@@ -425,8 +419,8 @@ class ExtendedTextFieldState extends _TextFieldState {
         cursorColor = _hasError
             ? _errorColor
             : widget.cursorColor ??
-            selectionStyle.cursorColor ??
-            theme.colorScheme.primary;
+                selectionStyle.cursorColor ??
+                theme.colorScheme.primary;
         selectionColor = selectionStyle.selectionColor ??
             theme.colorScheme.primary.withOpacity(0.40);
       case TargetPlatform.linux:
@@ -437,8 +431,8 @@ class ExtendedTextFieldState extends _TextFieldState {
         cursorColor = _hasError
             ? _errorColor
             : widget.cursorColor ??
-            selectionStyle.cursorColor ??
-            theme.colorScheme.primary;
+                selectionStyle.cursorColor ??
+                theme.colorScheme.primary;
         selectionColor = selectionStyle.selectionColor ??
             theme.colorScheme.primary.withOpacity(0.40);
         handleDidGainAccessibilityFocus = () {
@@ -460,8 +454,8 @@ class ExtendedTextFieldState extends _TextFieldState {
         cursorColor = _hasError
             ? _errorColor
             : widget.cursorColor ??
-            selectionStyle.cursorColor ??
-            theme.colorScheme.primary;
+                selectionStyle.cursorColor ??
+                theme.colorScheme.primary;
         selectionColor = selectionStyle.selectionColor ??
             theme.colorScheme.primary.withOpacity(0.40);
         handleDidGainAccessibilityFocus = () {
@@ -508,7 +502,7 @@ class ExtendedTextFieldState extends _TextFieldState {
           // Only show the selection highlight when the text field is focused.
           selectionColor: focusNode.hasFocus ? selectionColor : null,
           selectionControls:
-          widget.selectionEnabled ? textSelectionControls : null,
+              widget.selectionEnabled ? textSelectionControls : null,
           onChanged: widget.onChanged,
           onSelectionChanged: _handleSelectionChanged,
           onEditingComplete: widget.onEditingComplete,
@@ -547,7 +541,7 @@ class ExtendedTextFieldState extends _TextFieldState {
           // contextMenuBuilder: widget.contextMenuBuilder,
           // spellCheckConfiguration: spellCheckConfiguration,
           extendedContextMenuBuilder:
-          extenedTextField.extendedContextMenuBuilder,
+              extenedTextField.extendedContextMenuBuilder,
           extendedSpellCheckConfiguration: spellCheckConfiguration,
           magnifierConfiguration: widget.magnifierConfiguration ??
               TextMagnifier.adaptiveMagnifierConfiguration,
@@ -579,7 +573,7 @@ class ExtendedTextFieldState extends _TextFieldState {
       );
     }
     final MouseCursor effectiveMouseCursor =
-    MaterialStateProperty.resolveAs<MouseCursor>(
+        MaterialStateProperty.resolveAs<MouseCursor>(
       widget.mouseCursor ?? MaterialStateMouseCursor.textable,
       _statesController.value,
     );
@@ -610,13 +604,13 @@ class ExtendedTextFieldState extends _TextFieldState {
                 onTap: widget.readOnly
                     ? null
                     : () {
-                  if (!_effectiveController.selection.isValid) {
-                    _effectiveController.selection =
-                        TextSelection.collapsed(
-                            offset: _effectiveController.text.length);
-                  }
-                  _requestKeyboard();
-                },
+                        if (!_effectiveController.selection.isValid) {
+                          _effectiveController.selection =
+                              TextSelection.collapsed(
+                                  offset: _effectiveController.text.length);
+                        }
+                        _requestKeyboard();
+                      },
                 onDidGainAccessibilityFocus: handleDidGainAccessibilityFocus,
                 onDidLoseAccessibilityFocus: handleDidLoseAccessibilityFocus,
                 onFocus: _isEnabled

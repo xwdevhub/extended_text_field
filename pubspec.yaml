@@ -18,7 +18,7 @@ dependencies:
     git:
       url: https://github.com/xwdevhub/flutter-plugins.git
       path: packages/pasteboard
-  super_clipboard: ^0.8.24
+#  super_clipboard: ^0.8.24
   # extended_text_library:  
   #   version: ^11.0.0-dev.1
   #   hosted: "https://pub.dev"
