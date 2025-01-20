@@ -8,9 +8,9 @@ part of 'package:extended_text_field/src/extended/widgets/text_field.dart';
 ///  * [SelectableRegionContextMenuBuilder], which performs the same role for
 ///    [SelectableRegion].
 typedef ExtendedEditableTextContextMenuBuilder = Widget Function(
-  BuildContext context,
-  ExtendedEditableTextState editableTextState,
-);
+    BuildContext context,
+    ExtendedEditableTextState editableTextState,
+    );
 
 /// [EditableText]
 ///
@@ -77,9 +77,8 @@ class ExtendedEditableText extends _EditableText {
     super.autocorrectionTextRectColor,
     @Deprecated(
       'Use `contextMenuBuilder` instead. '
-      'This feature was deprecated after v3.3.0-0.5.pre.',
-    )
-    ToolbarOptions? toolbarOptions,
+          'This feature was deprecated after v3.3.0-0.5.pre.',
+    ) ToolbarOptions? toolbarOptions,
     super.autofillHints = const <String>[],
     super.autofillClient,
     super.clipBehavior = Clip.hardEdge,
@@ -155,6 +154,7 @@ class ExtendedEditableText extends _EditableText {
   /// If this configuration is left null, then spell check is disabled by default.
   /// {@endtemplate}
   final ExtendedSpellCheckConfiguration? extendedSpellCheckConfiguration;
+
   @override
   _EditableTextState createState() {
     return ExtendedEditableTextState();
@@ -164,6 +164,7 @@ class ExtendedEditableText extends _EditableText {
 class ExtendedEditableTextState extends _EditableTextState {
   ExtendedEditableText get extendedEditableText =>
       widget as ExtendedEditableText;
+
   ExtendedSpellCheckConfiguration get extendedSpellCheckConfiguration =>
       _spellCheckConfiguration as ExtendedSpellCheckConfiguration;
   bool _shouldShowCaret = false;
@@ -171,8 +172,8 @@ class ExtendedEditableTextState extends _EditableTextState {
   /// whether to support build SpecialText
   bool get supportSpecialText =>
       extendedEditableText.specialTextSpanBuilder != null &&
-      !widget.obscureText &&
-      _textDirection == TextDirection.ltr;
+          !widget.obscureText &&
+          _textDirection == TextDirection.ltr;
 
   // State lifecycle:
 
@@ -208,10 +209,10 @@ class ExtendedEditableTextState extends _EditableTextState {
             FlutterErrorDetails(
               exception: FlutterError(
                 'Spell check was enabled with spellCheckConfiguration, but the '
-                'current platform does not have a supported spell check '
-                'service, and none was provided. Consider disabling spell '
-                'check for this platform or passing a SpellCheckConfiguration '
-                'with a specified spell check service.',
+                    'current platform does not have a supported spell check '
+                    'service, and none was provided. Consider disabling spell '
+                    'check for this platform or passing a SpellCheckConfiguration '
+                    'with a specified spell check service.',
               ),
               library: 'widget library',
               stack: StackTrace.current,
@@ -249,7 +250,7 @@ class ExtendedEditableTextState extends _EditableTextState {
           break;
         case TargetPlatform.android:
         case TargetPlatform.fuchsia:
-          // Collapse the selection and hide the toolbar and handles.
+        // Collapse the selection and hide the toolbar and handles.
           userUpdateTextEditingValue(
             TextEditingValue(
               text: textEditingValue.text,
@@ -295,6 +296,13 @@ class ExtendedEditableTextState extends _EditableTextState {
     if (widget.readOnly) {
       return;
     }
+    if (!Platform.isAndroid && (await Pasteboard.files()).isEmpty &&
+        (await Pasteboard.image) != null && (await Pasteboard.image)!.isEmpty
+        && (await Pasteboard.html) != null &&
+        (await Pasteboard.html)!.isEmpty && (await Pasteboard.text) != null &&
+        (await Pasteboard.text)!.isEmpty) {
+      return;
+    }
 
     await extendedEditableText.pasteTextIntercept?.call();
     // Snapshot the input before using `await`.
@@ -334,9 +342,9 @@ class ExtendedEditableTextState extends _EditableTextState {
     // After the paste, the cursor should be collapsed and located after the
     // pasted content.
     final int lastSelectionIndex =
-        math.max(selection.baseOffset, selection.extentOffset);
+    math.max(selection.baseOffset, selection.extentOffset);
     final TextEditingValue collapsedTextEditingValue =
-        textEditingValue.copyWith(
+    textEditingValue.copyWith(
       selection: TextSelection.collapsed(offset: lastSelectionIndex),
     );
 
@@ -363,7 +371,7 @@ class ExtendedEditableTextState extends _EditableTextState {
     int index = 0;
     bool isText = false;
     bool isImage = false;
-    bool isFile =false;
+    bool isFile = false;
     renderEditable.text!.visitChildren((InlineSpan ts) {
       if (ts is SpecialInlineSpanBase) {
         final SpecialInlineSpanBase specialTs = ts as SpecialInlineSpanBase;
@@ -384,7 +392,7 @@ class ExtendedEditableTextState extends _EditableTextState {
             index++;
             selectLength += ts.actualText.length;
             return true;
-          } else if(ts is FileSpan){
+          } else if (ts is FileSpan) {
             if (ts.actualText.contains("[file:")) {
               isFile = true;
             } else {
@@ -394,7 +402,7 @@ class ExtendedEditableTextState extends _EditableTextState {
             index++;
             selectLength += ts.actualText.length;
             return true;
-          }else if (ts is ExtendedWidgetSpan) {
+          } else if (ts is ExtendedWidgetSpan) {
             if (ts.child is Text) {
               isText = true;
               Text text = ts.child as Text;
@@ -441,7 +449,7 @@ class ExtendedEditableTextState extends _EditableTextState {
       }
       return true;
     });
-    if ((isText||isFile) && isImage) {
+    if ((isText || isFile) && isImage) {
       String copyHtml5 = "";
       map.forEach((key, value) {
         String text = value as String;
@@ -449,7 +457,8 @@ class ExtendedEditableTextState extends _EditableTextState {
         if (text.contains("[image:") && text.contains(" ]")) {
           //图片
           copyHtml5 +=
-              '<img alt src="${text.replaceAll("[image:", "").replaceAll(" ]", "")}">';
+          '<img alt src="${text.replaceAll("[image:", "").replaceAll(
+              " ]", "")}">';
         } else {
           copyHtml5 += '<span>$text</span>';
         }
@@ -476,7 +485,7 @@ class ExtendedEditableTextState extends _EditableTextState {
         });
         Pasteboard.writeText(text);
         // Clipboard.setData(ClipboardData(text: text));
-      }else if(isFile){
+      } else if (isFile) {
         List<String> list = [];
         map.forEach((key, value) {
           list.add(
@@ -504,11 +513,11 @@ class ExtendedEditableTextState extends _EditableTextState {
     final TextSelectionControls? controls = widget.selectionControls;
     double? textScaleFactor;
     final TextScaler effectiveTextScaler = switch ((
-      widget.textScaler, textScaleFactor //widget.textScaleFactor
+    widget.textScaler, textScaleFactor //widget.textScaleFactor
     )) {
       (final TextScaler textScaler, _) => textScaler,
       (null, final double textScaleFactor) =>
-        TextScaler.linear(textScaleFactor),
+          TextScaler.linear(textScaleFactor),
       (null, null) => MediaQuery.textScalerOf(context),
     };
     return _CompositionCallback(
@@ -517,7 +526,7 @@ class ExtendedEditableTextState extends _EditableTextState {
       child: TextFieldTapRegion(
         groupId: widget.groupId,
         onTapOutside:
-            _hasFocus ? widget.onTapOutside ?? _defaultOnTapOutside : null,
+        _hasFocus ? widget.onTapOutside ?? _defaultOnTapOutside : null,
         debugLabel: kReleaseMode ? null : 'ExtendedEditableText',
         child: MouseRegion(
           cursor: widget.mouseCursor ?? SystemMouseCursors.text,
@@ -545,14 +554,14 @@ class ExtendedEditableTextState extends _EditableTextState {
                   case TargetPlatform.fuchsia:
                   case TargetPlatform.linux:
                   case TargetPlatform.windows:
-                    // Composing text is not counted in history coalescing.
+                  // Composing text is not counted in history coalescing.
                     if (!widget.controller.value.composing.isCollapsed) {
                       return false;
                     }
                   case TargetPlatform.android:
-                    // Gboard on Android puts non-CJK words in composing regions. Coalesce
-                    // composing text in order to allow the saving of partial words in that
-                    // case.
+                  // Gboard on Android puts non-CJK words in composing regions. Coalesce
+                  // composing text in order to allow the saving of partial words in that
+                  // case.
                     break;
                 }
                 if (oldValue.selection.start == oldValue.selection.end &&
@@ -589,7 +598,7 @@ class ExtendedEditableTextState extends _EditableTextState {
                     key: _scrollableKey,
                     excludeFromSemantics: true,
                     axisDirection:
-                        _isMultiline ? AxisDirection.down : AxisDirection.right,
+                    _isMultiline ? AxisDirection.down : AxisDirection.right,
                     controller: _scrollController,
                     physics: widget.scrollPhysics,
                     dragStartBehavior: widget.dragStartBehavior,
@@ -627,7 +636,7 @@ class ExtendedEditableTextState extends _EditableTextState {
                                 value: _value,
                                 cursorColor: _cursorColor,
                                 backgroundCursorColor:
-                                    widget.backgroundCursorColor,
+                                widget.backgroundCursorColor,
                                 showCursor: _cursorVisibilityNotifier,
                                 forceLine: widget.forceLine,
                                 readOnly: widget.readOnly,
@@ -637,11 +646,11 @@ class ExtendedEditableTextState extends _EditableTextState {
                                 expands: widget.expands,
                                 strutStyle: widget.strutStyle,
                                 selectionColor: _selectionOverlay
-                                            ?.spellCheckToolbarIsVisible ??
-                                        false
+                                    ?.spellCheckToolbarIsVisible ??
+                                    false
                                     ? _spellCheckConfiguration
-                                            .misspelledSelectionColor ??
-                                        widget.selectionColor
+                                    .misspelledSelectionColor ??
+                                    widget.selectionColor
                                     : widget.selectionColor,
                                 textScaler: effectiveTextScaler,
                                 textAlign: widget.textAlign,
@@ -654,27 +663,28 @@ class ExtendedEditableTextState extends _EditableTextState {
                                 obscureText: widget.obscureText,
                                 offset: offset,
                                 rendererIgnoresPointer:
-                                    widget.rendererIgnoresPointer,
+                                widget.rendererIgnoresPointer,
                                 cursorWidth: widget.cursorWidth,
                                 cursorHeight: widget.cursorHeight,
                                 cursorRadius: widget.cursorRadius,
                                 cursorOffset:
-                                    widget.cursorOffset ?? Offset.zero,
+                                widget.cursorOffset ?? Offset.zero,
                                 selectionHeightStyle:
-                                    widget.selectionHeightStyle,
+                                widget.selectionHeightStyle,
                                 selectionWidthStyle: widget.selectionWidthStyle,
                                 paintCursorAboveText:
-                                    widget.paintCursorAboveText,
+                                widget.paintCursorAboveText,
                                 enableInteractiveSelection:
-                                    widget._userSelectionEnabled,
+                                widget._userSelectionEnabled,
                                 textSelectionDelegate: this,
                                 devicePixelRatio: _devicePixelRatio,
                                 promptRectRange: _currentPromptRectRange,
                                 promptRectColor:
-                                    widget.autocorrectionTextRectColor,
+                                widget.autocorrectionTextRectColor,
                                 clipBehavior: widget.clipBehavior,
                                 supportSpecialText: supportSpecialText,
-                                offsetFunction: extendedEditableText.offsetFunction,
+                                offsetFunction: extendedEditableText
+                                    .offsetFunction,
                               ),
                             ),
                           ),
@@ -706,7 +716,7 @@ class ExtendedEditableTextState extends _EditableTextState {
         _selectionOverlay == null ||
         !_spellCheckResultsReceived ||
         findSuggestionSpanAtCursorIndex(
-                textEditingValue.selection.extentOffset) ==
+            textEditingValue.selection.extentOffset) ==
             null) {
       // Only attempt to show the spell check suggestions toolbar if there
       // is a toolbar specified and spell check suggestions available to show.
@@ -714,15 +724,15 @@ class ExtendedEditableTextState extends _EditableTextState {
     }
 
     assert(
-      _spellCheckConfiguration.spellCheckSuggestionsToolbarBuilder != null,
-      'spellCheckSuggestionsToolbarBuilder must be defined in '
-      'SpellCheckConfiguration to show a toolbar with spell check '
-      'suggestions',
+    _spellCheckConfiguration.spellCheckSuggestionsToolbarBuilder != null,
+    'spellCheckSuggestionsToolbarBuilder must be defined in '
+        'SpellCheckConfiguration to show a toolbar with spell check '
+        'suggestions',
     );
 
     // zmtzawqlp
     _selectionOverlay!.showSpellCheckSuggestionsToolbar(
-      (BuildContext context) {
+          (BuildContext context) {
         // zmtzawqlp
         return extendedSpellCheckConfiguration
             .extendedSpellCheckSuggestionsToolbarBuilder!(
@@ -737,7 +747,7 @@ class ExtendedEditableTextState extends _EditableTextState {
   @override
   _TextSelectionOverlay _createSelectionOverlay() {
     final ExtendedTextSelectionOverlay selectionOverlay =
-        ExtendedTextSelectionOverlay(
+    ExtendedTextSelectionOverlay(
       clipboardStatus: clipboardStatus,
       context: context,
       value: _value,
@@ -752,15 +762,15 @@ class ExtendedEditableTextState extends _EditableTextState {
       onSelectionHandleTapped: widget.onSelectionHandleTapped,
       // zmtzawqlp
       contextMenuBuilder:
-          extendedEditableText.extendedContextMenuBuilder == null ||
-                  _webContextMenuEnabled
-              ? null
-              : (BuildContext context) {
-                  return extendedEditableText.extendedContextMenuBuilder!(
-                    context,
-                    this,
-                  );
-                },
+      extendedEditableText.extendedContextMenuBuilder == null ||
+          _webContextMenuEnabled
+          ? null
+          : (BuildContext context) {
+        return extendedEditableText.extendedContextMenuBuilder!(
+          context,
+          this,
+        );
+      },
       magnifierConfiguration: widget.magnifierConfiguration,
     );
 
@@ -788,7 +798,7 @@ class ExtendedEditableTextState extends _EditableTextState {
               mobilePlatforms.contains(defaultTargetPlatform);
       if (brieflyShowPassword) {
         final int? o =
-            _obscureShowCharTicksPending > 0 ? _obscureLatestCharIndex : null;
+        _obscureShowCharTicksPending > 0 ? _obscureLatestCharIndex : null;
         if (o != null && o >= 0 && o < text.length) {
           text = text.replaceRange(o, o + 1, _value.text.substring(o, o + 1));
         }
@@ -903,9 +913,9 @@ class ExtendedEditableTextState extends _EditableTextState {
     if (supportSpecialText) {
       position =
           ExtendedTextLibraryUtils.convertTextInputPostionToTextPainterPostion(
-        renderEditable.text!,
-        position,
-      );
+            renderEditable.text!,
+            position,
+          );
     }
     final Rect localRect = renderEditable.getLocalRectForCaret(position);
     final RevealedOffset targetOffset = _getOffsetToRevealCaret(localRect);
@@ -920,9 +930,9 @@ class ExtendedEditableTextState extends _EditableTextState {
     if (supportSpecialText) {
       final bool textChanged = _value.text != value.text;
       final bool selectionChanged = _value.selection != value.selection;
-        final TextSpan newTextSpan = extendedEditableText
-            .specialTextSpanBuilder!
-            .build(value.text, textStyle: widget.style);
+      final TextSpan newTextSpan = extendedEditableText
+          .specialTextSpanBuilder!
+          .build(value.text, textStyle: widget.style);
       if (textChanged) {
         final TextSpan oldTextSpan = extendedEditableText
             .specialTextSpanBuilder!
@@ -968,7 +978,7 @@ class ExtendedEditableTextState extends _EditableTextState {
     if (_checkNeedsAdjustAffinity(value)) {
       value = value.copyWith(
           selection:
-              value.selection.copyWith(affinity: _value.selection.affinity));
+          value.selection.copyWith(affinity: _value.selection.affinity));
     }
 
     if (widget.readOnly) {
@@ -1012,9 +1022,9 @@ class ExtendedEditableTextState extends _EditableTextState {
           value.text.length == _value.text.length + 1;
 
       _obscureShowCharTicksPending =
-          revealObscuredInput ? _kObscureShowLatestCharCursorTicks : 0;
+      revealObscuredInput ? _kObscureShowLatestCharCursorTicks : 0;
       _obscureLatestCharIndex =
-          revealObscuredInput ? _value.selection.baseOffset : null;
+      revealObscuredInput ? _value.selection.baseOffset : null;
       _formatAndSetValue(value, SelectionChangedCause.keyboard);
     }
 
@@ -1032,14 +1042,14 @@ class ExtendedEditableTextState extends _EditableTextState {
   }
 
   @override
-  void userUpdateTextEditingValue(
-      TextEditingValue value, SelectionChangedCause? cause) {
+  void userUpdateTextEditingValue(TextEditingValue value,
+      SelectionChangedCause? cause) {
     // zmtzawqlp
     value = _handleSpecialTextSpan(value);
     // Compare the current TextEditingValue with the pre-format new
     // TextEditingValue value, in case the formatter would reject the change.
     final bool shouldShowCaret =
-        widget.readOnly ? _value.selection != value.selection : _value != value;
+    widget.readOnly ? _value.selection != value.selection : _value != value;
     if (shouldShowCaret) {
       _scheduleShowCaretOnScreen(withAnimation: true);
     } else if (_shouldShowCaret) {
@@ -1066,7 +1076,8 @@ class ExtendedEditableTextState extends _EditableTextState {
   void updateFloatingCursor(RawFloatingCursorPoint point) {
     _floatingCursorResetController ??= AnimationController(
       vsync: this,
-    )..addListener(_onFloatingCursorResetTick);
+    )
+      ..addListener(_onFloatingCursorResetTick);
     switch (point.state) {
       case FloatingCursorDragState.Start:
         if (_floatingCursorResetController!.isAnimating) {
@@ -1092,15 +1103,17 @@ class ExtendedEditableTextState extends _EditableTextState {
           // zmtzawqlp
           currentTextPosition = supportSpecialText
               ? ExtendedTextLibraryUtils
-                  .convertTextInputPostionToTextPainterPostion(
-                  renderEditable.text!,
-                  renderEditable.selection!.base,
-                )
+              .convertTextInputPostionToTextPainterPostion(
+            renderEditable.text!,
+            renderEditable.selection!.base,
+          )
               : TextPosition(
-                  offset: renderEditable.selection!.baseOffset,
-                  affinity: renderEditable.selection!.affinity);
+              offset: renderEditable.selection!.baseOffset,
+              affinity: renderEditable.selection!.affinity);
           startCaretCenter =
-              renderEditable.getLocalRectForCaret(currentTextPosition).center;
+              renderEditable
+                  .getLocalRectForCaret(currentTextPosition)
+                  .center;
         }
 
         _startCaretCenter = startCaretCenter;
@@ -1130,7 +1143,7 @@ class ExtendedEditableTextState extends _EditableTextState {
         renderEditable.setFloatingCursor(
             point.state, _lastBoundedOffset!, _lastTextPosition!);
       case FloatingCursorDragState.End:
-        // Resume cursor blinking.
+      // Resume cursor blinking.
         _startCursorBlink();
         // We skip animation if no update has happened.
         if (_lastTextPosition != null && _lastBoundedOffset != null) {
@@ -1154,7 +1167,7 @@ class ExtendedEditableTextState extends _EditableTextState {
       // Since we are in a post frame callback, check currentContext in case
       // RenderEditable has been disposed (in which case it will be null).
       final _RenderEditable? renderEditable =
-          _editableKey.currentContext?.findRenderObject() as _RenderEditable?;
+      _editableKey.currentContext?.findRenderObject() as _RenderEditable?;
       if (renderEditable == null ||
           !(renderEditable.selection?.isValid ?? false) ||
           !_scrollController.hasClients) {
@@ -1175,7 +1188,7 @@ class ExtendedEditableTextState extends _EditableTextState {
           kMinInteractiveDimension,
         );
         final Offset anchor =
-            _selectionOverlay!.selectionControls!.getHandleAnchor(
+        _selectionOverlay!.selectionControls!.getHandleAnchor(
           TextSelectionHandleType.collapsed,
           lineHeight,
         );
@@ -1187,7 +1200,7 @@ class ExtendedEditableTextState extends _EditableTextState {
       }
 
       final EdgeInsets caretPadding =
-          widget.scrollPadding.copyWith(bottom: bottomSpacing);
+      widget.scrollPadding.copyWith(bottom: bottomSpacing);
 
       // zmtzawqlp - xw update
       TextPosition caretPosition = renderEditable.selection!.extent;
@@ -1208,7 +1221,7 @@ class ExtendedEditableTextState extends _EditableTextState {
         rectToReveal = targetOffset.rect;
       } else {
         final List<TextBox> selectionBoxes =
-            renderEditable.getBoxesForSelection(selection);
+        renderEditable.getBoxesForSelection(selection);
         // selectionBoxes may be empty if, for example, the selection does not
         // encompass a full character, like if it only contained part of an
         // extended grapheme cluster.
@@ -1245,14 +1258,14 @@ class ExtendedEditableTextState extends _EditableTextState {
   void _updateCaretRectIfNeeded() {
     // zmtzawqlp
     final TextSelection? selection = // renderEditable.selection;
-        (renderEditable as ExtendedRenderEditable).getActualSelection();
+    (renderEditable as ExtendedRenderEditable).getActualSelection();
     if (selection == null || !selection.isValid || !selection.isCollapsed) {
       return;
     }
     final TextPosition currentTextPosition =
-        TextPosition(offset: selection.start);
+    TextPosition(offset: selection.start);
     final Rect caretRect =
-        renderEditable.getLocalRectForCaret(currentTextPosition);
+    renderEditable.getLocalRectForCaret(currentTextPosition);
     _textInputConnection!.setCaretRect(caretRect);
   }
 }
