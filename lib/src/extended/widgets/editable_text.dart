@@ -296,11 +296,11 @@ class ExtendedEditableTextState extends _EditableTextState {
     if (widget.readOnly) {
       return;
     }
-    if (!Platform.isAndroid && (await Pasteboard.files()).isEmpty &&
-        (await Pasteboard.image) != null && (await Pasteboard.image)!.isEmpty
-        && (await Pasteboard.html) != null &&
-        (await Pasteboard.html)!.isEmpty && (await Pasteboard.text) != null &&
-        (await Pasteboard.text)!.isEmpty) {
+   Uint8List? images =await Pasteboard.image;
+    String? htmls= await Pasteboard.html;
+    String? text2= await Pasteboard.text;
+    List<String> files =await Pasteboard.files();
+    if((!Platform.isAndroid)&&images==null&&(htmls==null||htmls!.isEmpty)&&(text2==null||text2!.isEmpty)&&files.isEmpty){
       return;
     }
 
