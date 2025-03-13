@@ -928,15 +928,15 @@ class ExtendedEditableTextState extends _EditableTextState {
     renderEditable.showOnScreen(rect: targetOffset.rect);
   }
 
-  ///zmt
   TextEditingValue _handleSpecialTextSpan(TextEditingValue value) {
     if (supportSpecialText) {
       final bool textChanged = _value.text != value.text;
       final bool selectionChanged = _value.selection != value.selection;
-      final TextSpan newTextSpan = extendedEditableText
-          .specialTextSpanBuilder!
-          .build(value.text, textStyle: widget.style);
       if (textChanged) {
+        final TextSpan newTextSpan = extendedEditableText
+            .specialTextSpanBuilder!
+            .build(value.text, textStyle: widget.style);
+
         final TextSpan oldTextSpan = extendedEditableText
             .specialTextSpanBuilder!
             .build(_value.text, textStyle: widget.style);
@@ -954,9 +954,26 @@ class ExtendedEditableTextState extends _EditableTextState {
           );
         }
       } else if (selectionChanged) {
+        late final InlineSpan inlineSpan;
+
+        // after pinying complete, the _ExtendedEditable.inlineSpan is not the same as _value.text
+        // #255
+        // only for windows
+        if (defaultTargetPlatform == TargetPlatform.windows &&
+            // correct caret offset, pinying complete
+            !value.composing.isValid &&
+            _value.composing.isValid) {
+          inlineSpan = extendedEditableText.specialTextSpanBuilder!
+              .build(_value.text, textStyle: widget.style);
+          _value = _value.copyWith(selection: value.selection);
+        } else {
+          inlineSpan =
+              (_editableKey.currentWidget as _ExtendedEditable).inlineSpan;
+        }
+
         value = ExtendedTextLibraryUtils.correctCaretOffset(
           value,
-          newTextSpan,
+          inlineSpan,
           _textInputConnection,
           oldValue: _value,
         );
