@@ -909,6 +909,24 @@ class ExtendedEditableTextState extends _EditableTextState {
     );
   }
 
+  @override
+  void bringIntoView(TextPosition position, {double offset = 0}) {
+    // zmtzawqlp
+    if (supportSpecialText) {
+      position =
+          ExtendedTextLibraryUtils.convertTextInputPostionToTextPainterPostion(
+            renderEditable.text!,
+            position,
+          );
+    }
+    final Rect localRect = renderEditable.getLocalRectForCaret(position);
+    final RevealedOffset targetOffset = _getOffsetToRevealCaret(localRect);
+
+    // zmtzawqlp
+    _scrollController.jumpTo(targetOffset.offset + offset);
+    renderEditable.showOnScreen(rect: targetOffset.rect);
+  }
+
   ///zmt
   TextEditingValue _handleSpecialTextSpan(TextEditingValue value) {
     if (supportSpecialText) {
