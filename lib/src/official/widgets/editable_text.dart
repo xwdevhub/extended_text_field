@@ -3775,7 +3775,7 @@ class _EditableTextState extends State<_EditableText>
   }
 
   // Animation configuration for scrolling the caret back on screen.
-  static const Duration _caretAnimationDuration = Duration(milliseconds: 100);
+  static const Duration _caretAnimationDuration = Duration(milliseconds: 30);
   static const Curve _caretAnimationCurve = Curves.fastOutSlowIn;
 
   bool _showCaretOnScreenScheduled = false;
