@@ -306,7 +306,6 @@ class ExtendedEditableTextState extends _EditableTextState {
       // 新增过滤：自行使用区域 (Private Use Zone) \uE000-\uF8FF
       text = data.text
           ?.replaceAllMapped(RegExp(r'(?<!\\)\r\n'), (match) => '\n')
-          .replaceAll(RegExp(r'[\uE000-\uF8FF\\t]'), '')
           .replaceAll(RegExp(r'[\uE000-\uF8FF]'), '');
     }
 
