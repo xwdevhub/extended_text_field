@@ -526,6 +526,7 @@ class ExtendedEditableTextState extends _EditableTextState {
             child: UndoHistory<TextEditingValue>(
               value: widget.controller,
               onTriggered: (TextEditingValue value) {
+                widget.controller.value =value;
                 userUpdateTextEditingValue(
                     value, SelectionChangedCause.keyboard);
               },
