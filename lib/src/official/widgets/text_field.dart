@@ -39,6 +39,7 @@ class _TextFieldSelectionGestureDetectorBuilder
         case TargetPlatform.macOS:
           break;
         case TargetPlatform.android:
+        case TargetPlatform.ohos:
         case TargetPlatform.fuchsia:
         case TargetPlatform.linux:
         case TargetPlatform.windows:
@@ -790,6 +791,7 @@ class _TextField extends StatefulWidget {
           editableTextState: editableTextState,
         );
       case TargetPlatform.android:
+      case TargetPlatform.ohos:
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
@@ -1215,6 +1217,7 @@ class _TextFieldState extends State<_TextField>
       case TargetPlatform.windows:
       case TargetPlatform.fuchsia:
       case TargetPlatform.android:
+      case TargetPlatform.ohos:
         if (cause == SelectionChangedCause.longPress) {
           _editableText?.bringIntoView(selection.extent);
         }
@@ -1224,6 +1227,7 @@ class _TextFieldState extends State<_TextField>
       case TargetPlatform.iOS:
       case TargetPlatform.fuchsia:
       case TargetPlatform.android:
+      case TargetPlatform.ohos:
         break;
       case TargetPlatform.macOS:
       case TargetPlatform.linux:
@@ -1341,6 +1345,7 @@ class _TextFieldState extends State<_TextField>
           widget.spellCheckConfiguration,
         );
       case TargetPlatform.android:
+      case TargetPlatform.ohos:
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
@@ -1403,6 +1408,7 @@ class _TextFieldState extends State<_TextField>
         };
 
       case TargetPlatform.android:
+      case TargetPlatform.ohos:
       case TargetPlatform.fuchsia:
         forcePressEnabled = false;
         textSelectionControls ??= materialTextSelectionHandleControls;

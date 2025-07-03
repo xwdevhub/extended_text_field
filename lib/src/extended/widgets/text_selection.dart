@@ -66,6 +66,7 @@ class ExtendedTextSelectionOverlay extends _TextSelectionOverlay {
           return; // Don't allow order swapping.
         }
       case TargetPlatform.android:
+      case TargetPlatform.ohos:
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
@@ -136,6 +137,7 @@ class ExtendedTextSelectionOverlay extends _TextSelectionOverlay {
           return; // Don't allow order swapping.
         }
       case TargetPlatform.android:
+      case TargetPlatform.ohos:
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:

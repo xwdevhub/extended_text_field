@@ -298,6 +298,7 @@ class ExtendedRenderEditable extends _RenderEditable {
           caretRect.height,
         );
       case TargetPlatform.android:
+      case TargetPlatform.ohos:
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
