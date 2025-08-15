@@ -309,7 +309,8 @@ class ExtendedEditableTextState extends _EditableTextState {
     }
 
     /// 过滤粘贴板上的文件
-    if (!Platform.isAndroid) {
+    if (!Platform.isAndroid && !Platform.isOhos) {
+
       final List<String> filePaths = await Pasteboard.files();
       if (filePaths.isNotEmpty) {
         _shouldShowCaret = true;

@@ -484,6 +484,10 @@ class _RenderEditable extends RenderBox
 
   /// Assert that the last layout still matches the constraints.
   void debugAssertLayoutUpToDate() {
+    if (_textLayoutLastMaxWidth == null || _textLayoutLastMinWidth == null) {
+      return;
+    }
+
     assert(
       _textLayoutLastMaxWidth == constraints.maxWidth &&
           _textLayoutLastMinWidth == constraints.minWidth,
