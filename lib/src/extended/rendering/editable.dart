@@ -293,7 +293,7 @@ class ExtendedRenderEditable extends _RenderEditable {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
         final double fullHeight =
-            _textPainter.getFullHeightForCaret(caretPosition, caretPrototype);
+            _textPainter.getFullHeightForCaret(caretPosition, caretPrototype) ?? 0.0;
         final double heightDiff = fullHeight - caretRect.height;
         // Center the caret vertically along the text.
         caretRect = Rect.fromLTWH(

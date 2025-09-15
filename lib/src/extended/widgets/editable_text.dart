@@ -526,7 +526,7 @@ class ExtendedEditableTextState extends _EditableTextState {
       compositeCallback: _compositeCallback,
       enabled: _hasInputConnection,
       child: TextFieldTapRegion(
-        groupId: widget.groupId,
+        // groupId: widget.groupId,
         onTapOutside:
         _hasFocus ? widget.onTapOutside ?? _defaultOnTapOutside : null,
         debugLabel: kReleaseMode ? null : 'ExtendedEditableText',

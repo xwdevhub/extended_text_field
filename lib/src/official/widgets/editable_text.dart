@@ -673,7 +673,7 @@ class _EditableText extends StatefulWidget {
     if (_strutStyle == null) {
       return StrutStyle.fromTextStyle(style, forceStrutHeight: true);
     }
-    return _strutStyle.inheritFromTextStyle(style);
+    return _strutStyle!.inheritFromTextStyle(style);
   }
 
   final StrutStyle? _strutStyle;
@@ -2716,13 +2716,13 @@ class _EditableTextState extends State<_EditableText>
     }
 
     // Check for changes in viewId.
-    if (_hasInputConnection) {
-      final int newViewId = View.of(context).viewId;
-      if (newViewId != _viewId) {
-        _textInputConnection!
-            .updateConfig(_effectiveAutofillClient.textInputConfiguration);
-      }
-    }
+    // if (_hasInputConnection) {
+    //   final int newViewId = View.of(context).viewId;
+    //   if (newViewId != _viewId) {
+    //     _textInputConnection!
+    //         .updateConfig(_effectiveAutofillClient.textInputConfiguration);
+    //   }
+    // }
 
     if (defaultTargetPlatform != TargetPlatform.iOS &&
         defaultTargetPlatform != TargetPlatform.android) {
@@ -4581,7 +4581,7 @@ class _EditableTextState extends State<_EditableText>
   @override
   String get autofillId => 'EditableText-$hashCode';
 
-  int? _viewId;
+  // int? _viewId;
 
   @override
   TextInputConfiguration get textInputConfiguration {
@@ -4595,9 +4595,9 @@ class _EditableTextState extends State<_EditableText>
           )
         : AutofillConfiguration.disabled;
 
-    _viewId = View.of(context).viewId;
+    // _viewId = View.of(context).viewId;
     return TextInputConfiguration(
-      viewId: _viewId,
+      // viewId: _viewId,
       inputType: widget.keyboardType,
       readOnly: widget.readOnly,
       obscureText: widget.obscureText,

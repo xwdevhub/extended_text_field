@@ -1784,7 +1784,7 @@ class _RenderEditable extends RenderBox
     caretRect = Offset(caretX, caretRect.top) & caretRect.size;
 
     final double fullHeight =
-        _textPainter.getFullHeightForCaret(caretPosition, caretPrototype);
+        _textPainter.getFullHeightForCaret(caretPosition, caretPrototype) ?? 0.0;
     switch (defaultTargetPlatform) {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
@@ -1825,7 +1825,6 @@ class _RenderEditable extends RenderBox
       double.infinity,
       (RenderBox child, BoxConstraints constraints) =>
           Size(child.getMinIntrinsicWidth(double.infinity), 0.0),
-      ChildLayoutHelper.getDryBaseline,
     );
     final (double minWidth, double maxWidth) = _adjustConstraints();
     return (_textIntrinsics
@@ -1843,7 +1842,6 @@ class _RenderEditable extends RenderBox
       // out in a single line. Therefore, using 0.0 as a dummy for the height.
       (RenderBox child, BoxConstraints constraints) =>
           Size(child.getMaxIntrinsicWidth(double.infinity), 0.0),
-      ChildLayoutHelper.getDryBaseline,
     );
     final (double minWidth, double maxWidth) = _adjustConstraints();
     return (_textIntrinsics
@@ -1931,8 +1929,7 @@ class _RenderEditable extends RenderBox
   @override
   double computeMaxIntrinsicHeight(double width) {
     _textIntrinsics.setPlaceholderDimensions(
-      layoutInlineChildren(width, ChildLayoutHelper.dryLayoutChild,
-          ChildLayoutHelper.getDryBaseline),
+      layoutInlineChildren(width, ChildLayoutHelper.dryLayoutChild),
     );
     return _preferredHeight(width);
   }
@@ -2330,7 +2327,7 @@ class _RenderEditable extends RenderBox
         minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
     _textIntrinsics
       ..setPlaceholderDimensions(layoutInlineChildren(constraints.maxWidth,
-          ChildLayoutHelper.dryLayoutChild, ChildLayoutHelper.getDryBaseline))
+          ChildLayoutHelper.dryLayoutChild))
       ..layout(minWidth: minWidth, maxWidth: maxWidth);
     final double width = forceLine
         ? constraints.maxWidth
@@ -2346,7 +2343,7 @@ class _RenderEditable extends RenderBox
         minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
     _textIntrinsics
       ..setPlaceholderDimensions(layoutInlineChildren(constraints.maxWidth,
-          ChildLayoutHelper.dryLayoutChild, ChildLayoutHelper.getDryBaseline))
+          ChildLayoutHelper.dryLayoutChild))
       ..layout(minWidth: minWidth, maxWidth: maxWidth);
     return _textIntrinsics.computeDistanceToActualBaseline(baseline);
   }
@@ -2355,7 +2352,7 @@ class _RenderEditable extends RenderBox
   void performLayout() {
     final BoxConstraints constraints = this.constraints;
     _placeholderDimensions = layoutInlineChildren(constraints.maxWidth,
-        ChildLayoutHelper.layoutChild, ChildLayoutHelper.getBaseline);
+        ChildLayoutHelper.layoutChild);
     final (double minWidth, double maxWidth) = _adjustConstraints(
         minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
     _textPainter
